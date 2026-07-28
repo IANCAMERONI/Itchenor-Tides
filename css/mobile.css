@@ -1,0 +1,126 @@
+/* ---------------------------------------------------------------- */
+/* Phone-sized layout. variables.css handles proportional scaling    */
+/* (root font-size); this file handles the structural reflow that    */
+/* scaling alone can't fix - rows that need to stack, gaps that need */
+/* to shrink, corner elements that need to get out of the way.       */
+/* ---------------------------------------------------------------- */
+
+@media (max-width: 700px) {
+  .bridge-header {
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-3) var(--space-2);
+    text-align: center;
+  }
+
+  .header-left {
+    flex-direction: column;
+    text-align: center;
+    gap: var(--space-1);
+  }
+
+  .header-right {
+    justify-content: center;
+  }
+
+  .clock-block {
+    text-align: center;
+  }
+
+  .bridge-main {
+    padding: 0 var(--space-3) var(--space-3);
+    gap: var(--space-2);
+  }
+
+  .sea-readout-value {
+    font-size: 4.4rem;
+  }
+
+  .sea-readout-countdowns {
+    gap: var(--space-4);
+  }
+
+  .sea-hud {
+    padding: var(--space-1) var(--space-2);
+  }
+
+  .sea-hud-left {
+    left: var(--space-2);
+  }
+
+  .sea-hud-right {
+    right: var(--space-2);
+  }
+
+  .bridge-footer {
+    flex-wrap: wrap;
+    justify-content: center;
+    row-gap: var(--space-2);
+    column-gap: var(--space-4);
+    padding: var(--space-2) var(--space-3);
+    text-align: center;
+  }
+
+  .footer-item {
+    align-items: center;
+  }
+
+  .fullscreen-hint {
+    margin-left: 0;
+    flex: 1 0 100%;
+    max-width: 220px;
+    margin: var(--space-1) auto 0;
+  }
+}
+
+/* Very narrow phones (portrait, smaller models) - trim further. */
+@media (max-width: 400px) {
+  .sea-readout-value {
+    font-size: 3.6rem;
+  }
+
+  .sea-readout-countdowns {
+    gap: var(--space-3);
+  }
+
+  .location-sub {
+    display: none;
+  }
+}
+
+/* Short landscape (phone rotated) - vertical space is the scarce
+   resource here, not width. */
+@media (max-height: 500px) {
+  .bridge-header {
+    flex-direction: row;
+    padding: var(--space-2) var(--space-4);
+  }
+
+  .header-left {
+    flex-direction: row;
+  }
+
+  .location-sub {
+    display: none;
+  }
+
+  .bridge-main {
+    gap: var(--space-1);
+  }
+
+  .sea-window {
+    flex: 1.3 1 0%;
+  }
+
+  .bridge-footer {
+    padding: var(--space-1) var(--space-4);
+    flex-wrap: nowrap;
+    justify-content: space-between;
+  }
+
+  .fullscreen-hint {
+    flex: 0 0 auto;
+    margin: 0 0 0 auto;
+  }
+}
