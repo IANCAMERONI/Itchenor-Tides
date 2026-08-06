@@ -14,6 +14,12 @@
 
   const curve = createTideCurve(document.getElementById('tide-curve-canvas'));
 
+  const curveSlider = createCurveSlider({
+    curve,
+    sliderEl: document.getElementById('curve-day-slider'),
+    labelEl: document.getElementById('curve-date-label'),
+  });
+
   const ui = createUI({ sea, curve });
 
   initFullscreen({
@@ -25,11 +31,17 @@
   const clock = createClock({
     onTick: (now) => {
       document.getElementById('clock-time').textContent = TideMath.formatClockTime(now);
+      curveSlider.tick();
     },
     onMinute: (now) => ui.render(now),
   });
 
-  TideService.subscribe(() => ui.render(new Date()));
+  TideService.subscribe((snapshot) => {
+    ui.render(new Date());
+    if (snapshot.extendedExtremes && snapshot.extendedExtremes.length) {
+      curveSlider.enable();
+    }
+  });
   TideService.start();
   clock.start();
   ui.render(new Date());

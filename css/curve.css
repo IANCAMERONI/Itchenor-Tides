@@ -1,10 +1,18 @@
 /* ---------------------------------------------------------------- */
 /* 24-hour tide curve — an Apple Weather-style hourly graph: a single */
-/* smooth line, minimal type, no axes or grid. All drawing (including */
-/* labels) happens on the canvas itself for a single, unified pass.    */
+/* smooth line, a light metres scale, minimal type, no gridlines. All */
+/* drawing (including labels) happens on the canvas itself.            */
 /* ---------------------------------------------------------------- */
 
 .tide-curve-wrap {
+  position: relative;
+  flex: 1.3 1 0%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.curve-canvas-wrap {
   position: relative;
   flex: 1 1 0%;
   min-height: 0;
@@ -15,4 +23,95 @@
   inset: 0;
   width: 100%;
   height: 100%;
+}
+
+/* ---------------------------------------------------------------- */
+/* Day slider — scrub up to 30 days ahead.                            */
+/* ---------------------------------------------------------------- */
+
+.curve-controls {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0 var(--space-2) var(--space-2);
+}
+
+.curve-date-label {
+  flex: 0 0 auto;
+  min-width: 8em;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1rem;
+  color: var(--c-brass-100);
+  letter-spacing: 0.02em;
+}
+
+.curve-slider-max {
+  flex: 0 0 auto;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--c-text-700);
+}
+
+.curve-slider {
+  flex: 1 1 auto;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 1.4rem;
+  background: transparent;
+  cursor: pointer;
+}
+
+.curve-slider:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+
+/* Track */
+.curve-slider::-webkit-slider-runnable-track {
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--c-brass-500) 0%,
+    var(--c-brass-500) var(--curve-slider-fill, 0%),
+    rgba(201, 164, 100, 0.16) var(--curve-slider-fill, 0%),
+    rgba(201, 164, 100, 0.16) 100%
+  );
+}
+.curve-slider::-moz-range-track {
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(201, 164, 100, 0.16);
+}
+.curve-slider::-moz-range-progress {
+  height: 3px;
+  border-radius: 999px;
+  background: var(--c-brass-500);
+}
+
+/* Thumb */
+.curve-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 1.2rem;
+  height: 1.2rem;
+  margin-top: -0.55rem;
+  border-radius: 50%;
+  background: var(--c-brass-100);
+  box-shadow: 0 0 0 4px rgba(201, 164, 100, 0.18), 0 0 16px var(--c-brass-glow);
+  border: none;
+  transition: transform var(--dur-fast) var(--ease-bridge);
+}
+.curve-slider:active::-webkit-slider-thumb {
+  transform: scale(1.15);
+}
+.curve-slider::-moz-range-thumb {
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 50%;
+  background: var(--c-brass-100);
+  box-shadow: 0 0 0 4px rgba(201, 164, 100, 0.18), 0 0 16px var(--c-brass-glow);
+  border: none;
 }

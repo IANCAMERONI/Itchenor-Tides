@@ -7,7 +7,8 @@ Plain HTML/CSS/JavaScript — no build step, no frameworks.
 The centrepiece is a live, continuously-scrolling water-level curve rather
 than a table of times. Current level, trend, and the next two tides update
 automatically every minute; the underlying prediction data refreshes from
-a live API every few hours.
+a live API every few hours. A slider under the curve scrubs up to 30 days
+into the future.
 
 ## 1. Get a free WorldTides API key
 
@@ -123,6 +124,8 @@ js/
   tideMath.js            Pure functions: interpolation, trends, countdowns, moon phase
   tideService.js         Fetch + localStorage cache + fallback for WorldTides API
   seaWindow.js            Canvas renderer for the animated water level display
+  tideCurve.js             24h curve renderer; also handles the future-day view
+  curveSlider.js            Wires the 30-day slider to the curve, plus idle auto-reset
   clock.js                Self-correcting clock / once-a-minute tick
   fullscreen.js            Fullscreen toggle, idle-cursor hiding, wake lock
   ui.js                    Wires data + clock ticks to the DOM
@@ -149,6 +152,27 @@ repositioned every frame to track the waterline.
 
 ## Notes
 
+- **Today's tide cards** (bottom corners of the sea window) list every
+  high and low water for the current day — usually two of each, since
+  Itchenor is semi-diurnal — rather than just the next upcoming one.
+- **The 24h curve** shows a light metres scale down the left edge
+  (`_drawYAxis` in `tideCurve.js`), with "nice" round-number ticks
+  rather than gridlines, so it stays readable without turning into an
+  engineering chart.
+- **The 30-day slider** works cheaply by fetching two different things
+  from WorldTides: a dense, 15-minute-resolution curve for the near term
+  (a few days, refreshed every 3 hours — this drives the live "today"
+  curve and the water animation), and a separate, extremes-only (highs/
+  lows) fetch covering the full 30 days ahead, refreshed once a day since
+  predictions that far out barely change. Dragging the slider to a future
+  day draws the curve by cosine-interpolating between that day's real
+  high/low values — the same "rule of twelfths"-style approximation
+  mariners use by hand — rather than fetching dense data for the whole
+  month, which would cost roughly 4x as many API credits. The high/low
+  times and heights shown are always the real fetched values; only the
+  curve's shape between them is approximated for days beyond the
+  near-term window. Scrub away from "today" and the slider snaps back on
+  its own after a bit of inactivity (`CONFIG.tideCurve.idleResetSeconds`).
 - Tide heights are relative to **Chart Datum** (matching Admiralty charts),
   not mean sea level — configurable via `CONFIG.worldTides.datum`.
 - This is a decorative/situational-awareness display, not a navigation

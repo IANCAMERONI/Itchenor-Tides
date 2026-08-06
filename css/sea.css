@@ -5,7 +5,7 @@
 
 .sea-window {
   position: relative;
-  flex: 1.6 1 0%;
+  flex: 1 1 0%;
   min-height: 0;
   margin-top: var(--space-2);
   border-radius: var(--radius-lg);
@@ -41,7 +41,7 @@
 .sea-readout-value {
   font-family: var(--font-display);
   font-weight: 500;
-  font-size: 6.4rem;
+  font-size: 4.6rem;
   line-height: 1;
   color: var(--c-brass-100);
   text-shadow:
@@ -53,7 +53,7 @@
 .sea-readout-unit {
   font-family: var(--font-body);
   font-weight: 300;
-  font-size: 1.9rem;
+  font-size: 1.4rem;
   margin-left: 0.35rem;
   color: var(--c-text-300);
   text-shadow: 0 4px 20px rgba(0, 0, 0, 0.65);
@@ -64,10 +64,10 @@
   align-items: baseline;
   justify-content: center;
   gap: 0.55rem;
-  margin-top: 0.5rem;
+  margin-top: 0.4rem;
   font-family: var(--font-body);
   font-weight: 500;
-  font-size: 2.1rem;
+  font-size: 1.6rem;
   letter-spacing: 0.03em;
   color: var(--c-water-300);
   text-shadow: 0 2px 20px rgba(0, 0, 0, 0.7);
@@ -75,7 +75,7 @@
 
 .sea-readout-state .trend-arrow {
   display: inline-block;
-  font-size: 1.7rem;
+  font-size: 1.35rem;
   align-self: center;
   transition: transform var(--dur-med) var(--ease-bridge);
 }
@@ -87,37 +87,8 @@
 .sea-readout-rate {
   font-family: var(--font-body);
   font-weight: 300;
-  font-size: 1.05rem;
+  font-size: 0.9rem;
   color: var(--c-text-500);
-}
-
-.sea-readout-countdowns {
-  display: flex;
-  justify-content: center;
-  gap: var(--space-6);
-  margin-top: var(--space-3);
-}
-
-.countdown-stat {
-  text-align: center;
-}
-
-.countdown-label {
-  font-size: 0.7rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--c-text-500);
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.7);
-}
-
-.countdown-value {
-  font-family: var(--font-display);
-  font-weight: 500;
-  font-size: 2.3rem;
-  margin-top: 0.2rem;
-  color: var(--c-brass-100);
-  font-variant-numeric: tabular-nums;
-  text-shadow: 0 0 30px var(--c-brass-glow), 0 4px 20px rgba(0, 0, 0, 0.65);
 }
 
 /* ---------------------------------------------------------------- */
@@ -148,19 +119,27 @@
   letter-spacing: 0.15em;
   text-transform: uppercase;
   color: var(--c-text-500);
-  margin-bottom: 0.2rem;
+  margin-bottom: 0.35rem;
+}
+
+.sea-hud .event-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-top: 0.3rem;
 }
 
 .sea-hud .event-time {
   font-family: var(--font-display);
   font-weight: 500;
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   color: var(--c-text-100);
   font-variant-numeric: tabular-nums;
 }
 
 .sea-hud .event-height {
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   color: var(--c-text-300);
-  margin-top: 0.1rem;
+  font-variant-numeric: tabular-nums;
 }

@@ -1,9 +1,10 @@
 /**
  * Renders the 24-hour tide curve: a single smooth line with a soft wash
- * beneath it, high/low markers labelled directly on the curve, and a
- * gently glowing "now" marker — styled after Apple Weather's hourly
- * graph rather than an engineering chart. No axes, no gridlines; all
- * drawing (including type) happens in one canvas pass.
+ * beneath it, high/low markers labelled directly on the curve, a light
+ * metres scale down the left edge, and a gently glowing "now" marker —
+ * styled after Apple Weather's hourly graph rather than an engineering
+ * chart. No gridlines; all drawing (including type) happens in one
+ * canvas pass.
  */
 function createTideCurve(canvas) {
   const ctx = canvas.getContext('2d');
@@ -11,7 +12,8 @@ function createTideCurve(canvas) {
 
   let dpr = Math.max(1, window.devicePixelRatio || 1);
   let cssWidth = 0, cssHeight = 0;
-  let latestData = { heights: [], extremes: [] };
+  let latestData = { heights: [], extremes: [], extendedExtremes: [] };
+  let dayOffset = 0; // 0 = today (live, dense curve); >0 = future day (extremes-only approximation)
   const SAMPLE_INTERVAL_MS = 200;
   let lastSampleAt = 0;
 
@@ -50,12 +52,26 @@ function createTideCurve(canvas) {
     latestData = data;
   }
 
+  /** Called by the day slider. 0 = back to today's live curve. */
+  function setDayOffset(days) {
+    dayOffset = Math.max(0, Math.min(CONFIG.tideCurve.maxDayOffset, days));
+  }
+
+  function getDayOffset() {
+    return dayOffset;
+  }
+
   function _timeWindow(nowMs) {
-    const { hoursBefore, hoursAfter } = CONFIG.tideCurve;
-    return {
-      startMs: nowMs - hoursBefore * 3600000,
-      endMs: nowMs + hoursAfter * 3600000,
-    };
+    if (dayOffset === 0) {
+      const { hoursBefore, hoursAfter } = CONFIG.tideCurve;
+      return {
+        startMs: nowMs - hoursBefore * 3600000,
+        endMs: nowMs + hoursAfter * 3600000,
+      };
+    }
+    // A future day isn't "now-relative" - show the whole calendar day.
+    const startMs = TideMath.startOfDayOffset(dayOffset);
+    return { startMs, endMs: startMs + 24 * 3600000 };
   }
 
   function _xForTime(ms, startMs, endMs) {
@@ -63,12 +79,15 @@ function createTideCurve(canvas) {
   }
 
   function _buildSamples(startMs, endMs, count) {
-    const { heights } = latestData;
-    if (!heights.length) return [];
+    const useExtended = dayOffset > 0;
+    const heights = latestData.heights;
+    const extremes = latestData.extendedExtremes;
+    if (useExtended ? !extremes || !extremes.length : !heights.length) return [];
+
     const pts = [];
     for (let i = 0; i <= count; i++) {
       const t = startMs + (i / count) * (endMs - startMs);
-      const h = TideMath.heightAt(heights, t);
+      const h = useExtended ? TideMath.heightAtFromExtremes(extremes, t) : TideMath.heightAt(heights, t);
       if (h == null) continue;
       pts.push({ t, h });
     }
@@ -92,6 +111,31 @@ function createTideCurve(canvas) {
   function _yForHeight(h, scale, band) {
     const t = (h - scale.min) / (scale.max - scale.min);
     return band.bottom - t * (band.bottom - band.top);
+  }
+
+  /** "Nice" round-metre tick values spanning the visible height range. */
+  function _yAxisTicks(scale) {
+    const range = scale.max - scale.min;
+    let step = 1;
+    if (range <= 2) step = 0.5;
+    else if (range > 6) step = 2;
+    const ticks = [];
+    const first = Math.ceil(scale.min / step) * step;
+    for (let v = first; v <= scale.max; v += step) ticks.push(Math.round(v * 10) / 10);
+    return ticks;
+  }
+
+  function _drawYAxis(scale, band) {
+    const fontSize = Math.max(9, cssHeight * 0.032);
+    ctx.font = `300 ${fontSize}px 'Jost', sans-serif`;
+    ctx.fillStyle = _hexToRgba(palette.text700, 0.85);
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    _yAxisTicks(scale).forEach(v => {
+      const y = _yForHeight(v, scale, band);
+      ctx.fillText(`${v}m`, cssWidth * 0.012, y);
+    });
+    ctx.textBaseline = 'alphabetic';
   }
 
   function _drawWash(pts, band) {
@@ -124,7 +168,7 @@ function createTideCurve(canvas) {
 
   function _drawExtremeMarkers(startMs, endMs, scale, band) {
     const fontSize = Math.max(11, cssHeight * 0.05);
-    const { extremes } = latestData;
+    const extremes = dayOffset > 0 ? latestData.extendedExtremes : latestData.extremes;
 
     extremes
       .filter(e => e.dt * 1000 >= startMs && e.dt * 1000 <= endMs)
@@ -221,8 +265,11 @@ function createTideCurve(canvas) {
 
     _drawWash(pts, band);
     _drawLine(pts);
+    _drawYAxis(scale, band);
     _drawExtremeMarkers(startMs, endMs, scale, band);
-    _drawNowMarker(nowMs, startMs, endMs, scale, band, nowPerf / 1000);
+    if (dayOffset === 0) {
+      _drawNowMarker(nowMs, startMs, endMs, scale, band, nowPerf / 1000);
+    }
     _drawTimeAxis(startMs, endMs);
   }
 
@@ -246,5 +293,5 @@ function createTideCurve(canvas) {
   _render(performance.now());
   requestAnimationFrame(_loop);
 
-  return { update, resize };
+  return { update, resize, setDayOffset, getDayOffset };
 }

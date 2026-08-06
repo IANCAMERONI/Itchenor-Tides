@@ -73,32 +73,43 @@
           <span id="trend-text">&mdash;</span>
           <span class="sea-readout-rate" id="trend-rate"></span>
         </div>
-        <div class="sea-readout-countdowns">
-          <div class="countdown-stat">
-            <div class="countdown-label">High Water In</div>
-            <div class="countdown-value" id="high-countdown">&ndash;</div>
-          </div>
-          <div class="countdown-stat">
-            <div class="countdown-label">Low Water In</div>
-            <div class="countdown-value" id="low-countdown">&ndash;</div>
-          </div>
-        </div>
       </div>
 
       <div class="sea-hud sea-hud-left" id="event-card-1">
-        <div class="event-type">Next High Tide</div>
-        <div class="event-time" id="event-1-time">--:--</div>
-        <div class="event-height"><span id="event-1-height">&ndash;.&ndash;</span> m</div>
+        <div class="event-type">High Tides Today</div>
+        <div class="event-row">
+          <span class="event-time" id="event-1a-time">--:--</span>
+          <span class="event-height"><span id="event-1a-height">&ndash;.&ndash;</span> m</span>
+        </div>
+        <div class="event-row">
+          <span class="event-time" id="event-1b-time">--:--</span>
+          <span class="event-height"><span id="event-1b-height">&ndash;.&ndash;</span> m</span>
+        </div>
       </div>
       <div class="sea-hud sea-hud-right" id="event-card-2">
-        <div class="event-type">Next Low Tide</div>
-        <div class="event-time" id="event-2-time">--:--</div>
-        <div class="event-height"><span id="event-2-height">&ndash;.&ndash;</span> m</div>
+        <div class="event-type">Low Tides Today</div>
+        <div class="event-row">
+          <span class="event-time" id="event-2a-time">--:--</span>
+          <span class="event-height"><span id="event-2a-height">&ndash;.&ndash;</span> m</span>
+        </div>
+        <div class="event-row">
+          <span class="event-time" id="event-2b-time">--:--</span>
+          <span class="event-height"><span id="event-2b-height">&ndash;.&ndash;</span> m</span>
+        </div>
       </div>
     </section>
 
-    <section class="tide-curve-wrap" aria-label="24 hour tide curve">
-      <canvas id="tide-curve-canvas"></canvas>
+    <section class="tide-curve-wrap" aria-label="Tide curve, with a 30-day forecast slider">
+      <div class="curve-controls">
+        <div class="curve-date-label" id="curve-date-label">Today</div>
+        <input type="range" class="curve-slider" id="curve-day-slider"
+               min="0" max="30" step="1" value="0"
+               aria-label="Days ahead" disabled>
+        <div class="curve-slider-max" id="curve-slider-max">+30d</div>
+      </div>
+      <div class="curve-canvas-wrap">
+        <canvas id="tide-curve-canvas"></canvas>
+      </div>
     </section>
 
   </main>
@@ -118,6 +129,10 @@
       <span class="footer-value" id="footer-moon">&mdash;</span>
     </div>
     <div class="footer-item">
+      <span class="footer-label">Next Full Moon</span>
+      <span class="footer-value" id="footer-full-moon">&mdash;</span>
+    </div>
+    <div class="footer-item">
       <span class="footer-label">Data Updated</span>
       <span class="footer-value" id="footer-updated">&mdash;</span>
     </div>
@@ -133,6 +148,7 @@
 <script src="js/tideService.js"></script>
 <script src="js/seaWindow.js"></script>
 <script src="js/tideCurve.js"></script>
+<script src="js/curveSlider.js"></script>
 <script src="js/clock.js"></script>
 <script src="js/fullscreen.js"></script>
 <script src="js/ui.js"></script>

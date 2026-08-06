@@ -171,12 +171,16 @@ function createSeaWindow(canvas, readoutEl) {
   function _positionReadout(baseY) {
     const gap = cssHeight * 0.06;
     const minTopMargin = cssHeight * 0.03;
+    const maxBottomMargin = cssHeight * 0.02;
     // `top` positions the block's *bottom* edge (see the CSS translate),
     // so clamp against its actual rendered height — measured live rather
-    // than assumed, so the readout can never clip against the window's
-    // top edge regardless of how much content it ends up holding.
+    // than assumed, so the readout can never clip against either edge of
+    // the window regardless of how much content it ends up holding. If
+    // the window is too short for both constraints at once, keep the top
+    // (the hero number) uncut in preference to the trend row beneath it.
     const blockHeight = readoutEl.offsetHeight;
     let bottomEdge = baseY - gap;
+    bottomEdge = Math.min(bottomEdge, cssHeight - maxBottomMargin);
     if (bottomEdge - blockHeight < minTopMargin) {
       bottomEdge = minTopMargin + blockHeight;
     }

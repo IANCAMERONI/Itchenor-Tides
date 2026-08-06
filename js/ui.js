@@ -14,17 +14,16 @@ function createUI({ sea, curve }) {
     trendArrow: document.getElementById('trend-arrow'),
     trendText: document.getElementById('trend-text'),
     trendRate: document.getElementById('trend-rate'),
-    highCountdown: document.getElementById('high-countdown'),
-    lowCountdown: document.getElementById('low-countdown'),
-    highTide: {
-      time: document.getElementById('event-1-time'),
-      height: document.getElementById('event-1-height'),
-    },
-    lowTide: {
-      time: document.getElementById('event-2-time'),
-      height: document.getElementById('event-2-height'),
-    },
+    highTideSlots: [
+      { time: document.getElementById('event-1a-time'), height: document.getElementById('event-1a-height') },
+      { time: document.getElementById('event-1b-time'), height: document.getElementById('event-1b-height') },
+    ],
+    lowTideSlots: [
+      { time: document.getElementById('event-2a-time'), height: document.getElementById('event-2a-height') },
+      { time: document.getElementById('event-2b-time'), height: document.getElementById('event-2b-height') },
+    ],
     footerMoon: document.getElementById('footer-moon'),
+    footerFullMoon: document.getElementById('footer-full-moon'),
     footerUpdated: document.getElementById('footer-updated'),
     footerPosition: document.getElementById('footer-position'),
   };
@@ -44,6 +43,7 @@ function createUI({ sea, curve }) {
       weekday: 'long', day: 'numeric', month: 'long',
     });
     el.footerMoon.textContent = TideMath.moonPhase(now);
+    el.footerFullMoon.textContent = TideMath.formatDaysUntilFullMoon(TideMath.daysUntilFullMoon(now));
   }
 
   function renderStatus(snapshot) {
@@ -87,19 +87,9 @@ function createUI({ sea, curve }) {
     }
   }
 
-  function renderEvents(snapshot, now) {
-    const nowMs = now.getTime();
-    const nextHigh = TideMath.nextEventOfType(snapshot.extremes, nowMs, 'High');
-    const nextLow = TideMath.nextEventOfType(snapshot.extremes, nowMs, 'Low');
-
-    el.highCountdown.textContent = nextHigh
-      ? TideMath.formatCountdown(nextHigh.dt * 1000, nowMs).replace(/^in /, '')
-      : '–';
-    el.lowCountdown.textContent = nextLow
-      ? TideMath.formatCountdown(nextLow.dt * 1000, nowMs).replace(/^in /, '')
-      : '–';
-
-    [[el.highTide, nextHigh], [el.lowTide, nextLow]].forEach(([slot, ev]) => {
+  function _fillSlots(slots, events) {
+    slots.forEach((slot, i) => {
+      const ev = events[i];
       if (!ev) {
         slot.time.textContent = '--:--';
         slot.height.textContent = '–.–';
@@ -108,6 +98,15 @@ function createUI({ sea, curve }) {
       slot.time.textContent = TideMath.formatEventTime(new Date(ev.dt * 1000));
       slot.height.textContent = ev.height.toFixed(2);
     });
+  }
+
+  function renderEvents(snapshot, now) {
+    const todayStart = TideMath.startOfDayOffset(0);
+    const highs = TideMath.eventsForDay(snapshot.extremes, todayStart, 'High');
+    const lows = TideMath.eventsForDay(snapshot.extremes, todayStart, 'Low');
+
+    _fillSlots(el.highTideSlots, highs);
+    _fillSlots(el.lowTideSlots, lows);
   }
 
   function render(now) {

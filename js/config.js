@@ -30,12 +30,21 @@ const CONFIG = {
     days: 4,
     // Resolution of the continuous height curve, in seconds.
     stepSeconds: 900,
+    // How many days ahead the "future" slider can reach. Fetched as
+    // extremes only (highs/lows), not dense heights - roughly 1 credit
+    // per week of range, versus ~2 credits per week for dense heights -
+    // so a full month's lookahead stays cheap even refreshed daily.
+    extendedDays: 31,
   },
 
   // ---- Refresh behaviour ----------------------------------------------
   refresh: {
-    // How often to hit the live API for new predictions.
+    // How often to hit the live API for new (near-term, dense) predictions.
     dataIntervalMs: 3 * 60 * 60 * 1000, // 3 hours
+    // How often to refresh the extended (30-day, extremes-only) range.
+    // Tide predictions this far out barely change day to day, so this
+    // can be far less frequent than the near-term refresh.
+    extendedDataIntervalMs: 24 * 60 * 60 * 1000, // 24 hours
     // How often the on-screen display re-renders from cached data
     // (clock, curve position, countdowns).
     tickIntervalMs: 60 * 1000, // 1 minute
@@ -76,10 +85,17 @@ const CONFIG = {
     hoursAfter: 23,
     // How often (seconds) the glow on the "now" marker breathes in and out.
     glowPeriodSeconds: 2.6,
+    // How far ahead the day slider can be dragged.
+    maxDayOffset: 30,
+    // Scrubbed away from "today" and then left alone, the slider snaps
+    // back to live "today" after this many seconds - keeps the display
+    // from getting stuck showing next month's tides indefinitely.
+    idleResetSeconds: 45,
   },
 
   // ---- Local persistence -------------------------------------------------
   storage: {
     cacheKey: 'itchenor-tide-cache-v1',
+    extendedCacheKey: 'itchenor-tide-extended-cache-v1',
   },
 };

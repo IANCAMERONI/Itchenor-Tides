@@ -3,6 +3,16 @@
  * localStorage, and exposes the latest known-good dataset even if a
  * refresh fails — the display should keep running quietly rather than
  * going blank because of one dropped request.
+ *
+ * Two independent pipelines run here:
+ *  - the near-term one (dense, 15-minute heights + extremes, a few days
+ *    out) that drives the live "now" curve and sea window, refreshed
+ *    every few hours;
+ *  - the extended one (extremes only - highs/lows, no dense heights - a
+ *    month out) that drives the future-day slider, refreshed once a
+ *    day since predictions that far out barely change. Extremes-only
+ *    is roughly half the API cost of dense heights per day of range,
+ *    which is what makes a 30-day lookahead affordable at all.
  */
 const TideService = (() => {
   let state = {
@@ -13,56 +23,62 @@ const TideService = (() => {
     errorMessage: null,
   };
 
+  let extendedState = {
+    extremes: [],
+    fetchedAt: null,
+    status: 'loading',
+    errorMessage: null,
+  };
+
   const listeners = new Set();
 
   function _notify() {
-    listeners.forEach(fn => fn({ ...state }));
+    const snapshot = getSnapshot();
+    listeners.forEach(fn => fn(snapshot));
   }
 
   function subscribe(fn) {
     listeners.add(fn);
-    fn({ ...state });
+    fn(getSnapshot());
     return () => listeners.delete(fn);
   }
 
-  function _cacheKey() {
-    return CONFIG.storage.cacheKey;
-  }
-
-  function _loadCache() {
+  function _loadCache(key) {
     try {
-      const raw = localStorage.getItem(_cacheKey());
+      const raw = localStorage.getItem(key);
       if (!raw) return null;
       const parsed = JSON.parse(raw);
-      if (!parsed || !Array.isArray(parsed.heights)) return null;
+      if (!parsed || !Array.isArray(parsed.extremes)) return null;
       return parsed;
     } catch (err) {
       return null;
     }
   }
 
-  function _saveCache(payload) {
+  function _saveCache(key, payload) {
     try {
-      localStorage.setItem(_cacheKey(), JSON.stringify(payload));
+      localStorage.setItem(key, JSON.stringify(payload));
     } catch (err) {
       /* Storage may be unavailable (private mode, quota) — non-fatal. */
     }
   }
 
-  function _buildUrl() {
-    const { endpoint, apiKey, datum, days, stepSeconds } = CONFIG.worldTides;
+  function _buildUrl({ includeHeights, days }) {
+    const { endpoint, apiKey, datum, stepSeconds } = CONFIG.worldTides;
     const { lat, lon } = CONFIG.location;
     const params = new URLSearchParams({
-      heights: '',
       extremes: '',
       date: 'today',
       days: String(days),
-      step: String(stepSeconds),
       datum,
       lat: String(lat),
       lon: String(lon),
       key: apiKey,
     });
+    if (includeHeights) {
+      params.set('heights', '');
+      params.set('step', String(stepSeconds));
+    }
     return `${endpoint}?${params.toString()}`;
   }
 
@@ -71,28 +87,48 @@ const TideService = (() => {
     return Boolean(key) && key !== 'YOUR_WORLDTIDES_API_KEY';
   }
 
-  async function _fetchLive() {
-    const res = await fetch(_buildUrl(), { cache: 'no-store' });
+  function _parseExtremes(body) {
+    return body.extremes.map(e => ({
+      dt: e.dt,
+      height: e.height,
+      type: /high/i.test(e.type) ? 'High' : 'Low',
+    }));
+  }
+
+  async function _fetchJson(url) {
+    const res = await fetch(url, { cache: 'no-store' });
     const body = await res.json().catch(() => null);
     if (!res.ok || !body || body.status !== 200) {
       const msg = (body && (body.error || body.message)) || `HTTP ${res.status}`;
       throw new Error(msg);
     }
-    if (!Array.isArray(body.heights) || !Array.isArray(body.extremes)) {
+    if (!Array.isArray(body.extremes)) {
+      throw new Error('Unexpected API response shape');
+    }
+    return body;
+  }
+
+  async function _fetchNearTerm() {
+    const body = await _fetchJson(_buildUrl({ includeHeights: true, days: CONFIG.worldTides.days }));
+    if (!Array.isArray(body.heights)) {
       throw new Error('Unexpected API response shape');
     }
     return {
       heights: body.heights.map(h => ({ dt: h.dt, height: h.height })),
-      extremes: body.extremes.map(e => ({
-        dt: e.dt,
-        height: e.height,
-        type: /high/i.test(e.type) ? 'High' : 'Low',
-      })),
+      extremes: _parseExtremes(body),
       fetchedAt: Date.now(),
     };
   }
 
-  function _applyLive(payload) {
+  async function _fetchExtended() {
+    const body = await _fetchJson(_buildUrl({ includeHeights: false, days: CONFIG.worldTides.extendedDays }));
+    return {
+      extremes: _parseExtremes(body),
+      fetchedAt: Date.now(),
+    };
+  }
+
+  function _applyNearTermLive(payload) {
     state = {
       heights: payload.heights,
       extremes: payload.extremes,
@@ -100,12 +136,12 @@ const TideService = (() => {
       status: 'live',
       errorMessage: null,
     };
-    _saveCache(payload);
+    _saveCache(CONFIG.storage.cacheKey, payload);
     _notify();
   }
 
-  function _applyError(message) {
-    const cached = _loadCache();
+  function _applyNearTermError(message) {
+    const cached = _loadCache(CONFIG.storage.cacheKey);
     if (cached && cached.heights.length) {
       const age = Date.now() - cached.fetchedAt;
       state = {
@@ -121,21 +157,55 @@ const TideService = (() => {
     _notify();
   }
 
+  function _applyExtendedLive(payload) {
+    extendedState = {
+      extremes: payload.extremes,
+      fetchedAt: payload.fetchedAt,
+      status: 'live',
+      errorMessage: null,
+    };
+    _saveCache(CONFIG.storage.extendedCacheKey, payload);
+    _notify();
+  }
+
+  function _applyExtendedError(message) {
+    const cached = _loadCache(CONFIG.storage.extendedCacheKey);
+    if (cached && cached.extremes.length) {
+      extendedState = {
+        extremes: cached.extremes,
+        fetchedAt: cached.fetchedAt,
+        status: 'stale',
+        errorMessage: message,
+      };
+    } else {
+      extendedState = { ...extendedState, status: 'error', errorMessage: message };
+    }
+    _notify();
+  }
+
   async function refresh() {
     if (!_isConfigured()) {
-      _applyError('No WorldTides API key configured — edit js/config.js');
+      _applyNearTermError('No WorldTides API key configured — edit js/config.js');
       return;
     }
     try {
-      const payload = await _fetchLive();
-      _applyLive(payload);
+      _applyNearTermLive(await _fetchNearTerm());
     } catch (err) {
-      _applyError(err.message || 'Failed to reach tide data service');
+      _applyNearTermError(err.message || 'Failed to reach tide data service');
+    }
+  }
+
+  async function refreshExtended() {
+    if (!_isConfigured()) return;
+    try {
+      _applyExtendedLive(await _fetchExtended());
+    } catch (err) {
+      _applyExtendedError(err.message || 'Failed to reach tide data service');
     }
   }
 
   function start() {
-    const cached = _loadCache();
+    const cached = _loadCache(CONFIG.storage.cacheKey);
     if (cached && cached.heights.length) {
       const age = Date.now() - cached.fetchedAt;
       state = {
@@ -145,23 +215,43 @@ const TideService = (() => {
         status: age > CONFIG.refresh.staleAfterMs ? 'stale' : 'live',
         errorMessage: null,
       };
-      _notify();
     }
 
+    const cachedExtended = _loadCache(CONFIG.storage.extendedCacheKey);
+    if (cachedExtended && cachedExtended.extremes.length) {
+      extendedState = {
+        extremes: cachedExtended.extremes,
+        fetchedAt: cachedExtended.fetchedAt,
+        status: 'live',
+        errorMessage: null,
+      };
+    }
+    _notify();
+
     refresh();
+    refreshExtended();
+
     setInterval(() => {
-      const isErrorState = state.status === 'error';
-      const interval = isErrorState
+      const interval = state.status === 'error'
         ? CONFIG.refresh.retryIntervalMs
         : CONFIG.refresh.dataIntervalMs;
-      const dueSince = Date.now() - (state.fetchedAt || 0);
-      if (dueSince >= interval) refresh();
+      if (Date.now() - (state.fetchedAt || 0) >= interval) refresh();
+
+      const extendedInterval = extendedState.status === 'error'
+        ? CONFIG.refresh.retryIntervalMs
+        : CONFIG.refresh.extendedDataIntervalMs;
+      if (Date.now() - (extendedState.fetchedAt || 0) >= extendedInterval) refreshExtended();
     }, 60 * 1000);
   }
 
   function getSnapshot() {
-    return { ...state };
+    return {
+      ...state,
+      extendedExtremes: extendedState.extremes,
+      extendedFetchedAt: extendedState.fetchedAt,
+      extendedStatus: extendedState.status,
+    };
   }
 
-  return { start, refresh, subscribe, getSnapshot };
+  return { start, refresh, refreshExtended, subscribe, getSnapshot };
 })();

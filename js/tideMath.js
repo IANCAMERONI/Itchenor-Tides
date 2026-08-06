@@ -32,6 +32,45 @@ const TideMath = (() => {
     return a.height + (b.height - a.height) * smooth;
   }
 
+  /** Binary-search the two extremes that straddle `atMs`. */
+  function _bracketExtremes(extremes, atMs) {
+    if (!extremes.length) return null;
+    const sorted = extremes; // callers already pass sorted-by-dt arrays
+    if (atMs <= sorted[0].dt * 1000) return [sorted[0], sorted[0]];
+    if (atMs >= sorted[sorted.length - 1].dt * 1000) {
+      const last = sorted[sorted.length - 1];
+      return [last, last];
+    }
+    let lo = 0, hi = sorted.length - 1;
+    while (hi - lo > 1) {
+      const mid = (lo + hi) >> 1;
+      if (sorted[mid].dt * 1000 <= atMs) lo = mid; else hi = mid;
+    }
+    return [sorted[lo], sorted[hi]];
+  }
+
+  /**
+   * Approximates the tide curve from highs/lows alone, via cosine
+   * interpolation between consecutive extremes — the same "rule of
+   * twelfths"-style approximation mariners use by hand. Real tide
+   * curves track this closely between a high and the next low, so it's
+   * a good stand-in for days too far out to justify fetching dense,
+   * per-15-minute height data (which costs far more in API credits).
+   * The high/low times and heights themselves are always the real,
+   * fetched values — only the shape of the curve between them is
+   * approximated.
+   */
+  function heightAtFromExtremes(extremes, atMs) {
+    const bracket = _bracketExtremes(extremes, atMs);
+    if (!bracket) return null;
+    const [a, b] = bracket;
+    if (a === b) return a.height;
+    const aMs = a.dt * 1000, bMs = b.dt * 1000;
+    const t = (atMs - aMs) / (bMs - aMs);
+    const smooth = (1 - Math.cos(t * Math.PI)) / 2;
+    return a.height + (b.height - a.height) * smooth;
+  }
+
   /** Rate of change in metres/hour, via a small central difference. */
   function trendAt(heights, atMs) {
     const dtMs = 5 * 60 * 1000;
@@ -45,41 +84,12 @@ const TideMath = (() => {
     return { direction, ratePerHour };
   }
 
-  /** Next N extremes (high/low events) strictly after `atMs`. */
-  function nextEvents(extremes, atMs, count = 2) {
+  /** All extremes of one type (High/Low) within the 24h starting at `dayStartMs`. */
+  function eventsForDay(extremes, dayStartMs, type) {
+    const dayEndMs = dayStartMs + 24 * 3600000;
     return extremes
-      .filter(e => e.dt * 1000 > atMs)
-      .sort((a, b) => a.dt - b.dt)
-      .slice(0, count);
-  }
-
-  /**
-   * The next High (or Low) water strictly after `atMs`, regardless of
-   * how many events of the other type fall in between — so "next high"
-   * and "next low" are always correct even when, say, two lows in a
-   * row are the nearest events chronologically.
-   */
-  function nextEventOfType(extremes, atMs, type) {
-    return extremes
-      .filter(e => e.dt * 1000 > atMs && e.type === type)
-      .sort((a, b) => a.dt - b.dt)[0] || null;
-  }
-
-  /** The extreme immediately preceding `atMs`, if any (for curve context). */
-  function previousEvent(extremes, atMs) {
-    const past = extremes
-      .filter(e => e.dt * 1000 <= atMs)
-      .sort((a, b) => b.dt - a.dt);
-    return past[0] || null;
-  }
-
-  function formatCountdown(targetMs, fromMs) {
-    let diff = Math.max(0, targetMs - fromMs);
-    const totalMinutes = Math.round(diff / 60000);
-    const h = Math.floor(totalMinutes / 60);
-    const m = totalMinutes % 60;
-    if (h <= 0) return `in ${m}m`;
-    return `in ${h}h ${String(m).padStart(2, '0')}m`;
+      .filter(e => e.dt * 1000 >= dayStartMs && e.dt * 1000 < dayEndMs && e.type === type)
+      .sort((a, b) => a.dt - b.dt);
   }
 
   function formatClockTime(date) {
@@ -94,16 +104,57 @@ const TideMath = (() => {
     });
   }
 
+  /** "Today" / "Tomorrow" / "Friday 14 August · in 12 days" for the slider label. */
+  function formatDayOffsetLabel(offsetDays) {
+    if (offsetDays === 0) return 'Today';
+    if (offsetDays === 1) return 'Tomorrow';
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() + offsetDays);
+    const dateStr = d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+    return `${dateStr} · in ${offsetDays} days`;
+  }
+
+  /** Start of the local day `offsetDays` from now, as a timestamp (ms). */
+  function startOfDayOffset(offsetDays) {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() + offsetDays);
+    return d.getTime();
+  }
+
+  const SYNODIC_MONTH_DAYS = 29.530588853;
+  const KNOWN_NEW_MOON_MS = Date.UTC(2000, 0, 6, 18, 14); // 2000-01-06 18:14 UTC
+
+  /** Fraction through the current lunar cycle: 0 = new, 0.5 = full, 1 = new again. */
+  function _moonPhaseFraction(date) {
+    const daysSince = (date.getTime() - KNOWN_NEW_MOON_MS) / 86400000;
+    let phase = (daysSince % SYNODIC_MONTH_DAYS) / SYNODIC_MONTH_DAYS;
+    if (phase < 0) phase += 1;
+    return phase;
+  }
+
+  /** How many days until the next full moon (0 if it's tonight). */
+  function daysUntilFullMoon(date) {
+    const phase = _moonPhaseFraction(date);
+    let days = (0.5 - phase) * SYNODIC_MONTH_DAYS;
+    if (days < 0) days += SYNODIC_MONTH_DAYS;
+    return days;
+  }
+
+  function formatDaysUntilFullMoon(days) {
+    const rounded = Math.round(days);
+    if (rounded <= 0) return 'Tonight';
+    if (rounded === 1) return 'Tomorrow';
+    return `in ${rounded} days`;
+  }
+
   /**
    * Simple synodic moon-phase approximation — accurate to well within a
    * day, which is all a decorative bridge instrument needs.
    */
   function moonPhase(date) {
-    const synodicMonth = 29.530588853;
-    const knownNewMoon = Date.UTC(2000, 0, 6, 18, 14); // 2000-01-06 18:14 UTC
-    const daysSince = (date.getTime() - knownNewMoon) / 86400000;
-    let phase = (daysSince % synodicMonth) / synodicMonth;
-    if (phase < 0) phase += 1;
+    const phase = _moonPhaseFraction(date);
 
     const phases = [
       { max: 0.03, name: 'New Moon', symbol: '●' },
@@ -122,13 +173,15 @@ const TideMath = (() => {
 
   return {
     heightAt,
+    heightAtFromExtremes,
     trendAt,
-    nextEvents,
-    nextEventOfType,
-    previousEvent,
-    formatCountdown,
+    eventsForDay,
     formatClockTime,
     formatEventTime,
+    formatDayOffsetLabel,
+    startOfDayOffset,
     moonPhase,
+    daysUntilFullMoon,
+    formatDaysUntilFullMoon,
   };
 })();
