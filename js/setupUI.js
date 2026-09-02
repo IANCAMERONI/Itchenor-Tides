@@ -53,6 +53,12 @@ function createSetupUI({
     if (!errorEl) return;
     errorEl.textContent = message;
     errorEl.hidden = false;
+    // The form scrolls inside a fixed-height card, and this can fire from
+    // a tap on a button near the bottom while the error itself renders
+    // further up (e.g. next to a field above the button) - without this,
+    // a visitor watching the button they just pressed can easily miss it
+    // and conclude nothing happened at all.
+    errorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
   function _hideError() {
@@ -183,56 +189,68 @@ function createSetupUI({
   function _onSubmit(event) {
     event.preventDefault();
 
-    const name = fields.name.value.trim();
-    if (!name) {
-      _showError('Please enter a location name.');
-      return;
+    // Everything below is wrapped in one try/catch as a last line of
+    // defence: this form has a long history of failing in ways that
+    // looked like "the button does nothing" - a thrown exception here
+    // (from a save, from a flaky script load, from anything) would
+    // otherwise die silently, since preventDefault() above has already
+    // stopped the browser's own fallback of just submitting the form.
+    // Whatever goes wrong now, the visitor sees *something* rather than
+    // nothing.
+    try {
+      const name = fields.name.value.trim();
+      if (!name) {
+        _showError('Please enter a location name.');
+        return;
+      }
+
+      const latMagnitude = parseFloat(fields.lat.value);
+      if (Number.isNaN(latMagnitude) || latMagnitude < 0 || latMagnitude > 90) {
+        _showError('No coordinates set yet - tap "Find Location" above, or expand "Set coordinates manually" below.');
+        if (advancedEl) advancedEl.open = true;
+        return;
+      }
+
+      const lonMagnitude = parseFloat(fields.lon.value);
+      if (Number.isNaN(lonMagnitude) || lonMagnitude < 0 || lonMagnitude > 180) {
+        _showError('Longitude must be a number between 0 and 180 (just the magnitude - use the E/W selector for hemisphere).');
+        if (advancedEl) advancedEl.open = true;
+        return;
+      }
+
+      const apiKey = fields.apiKey.value.trim();
+      if (!apiKey) {
+        _showError('Please enter your WorldTides API key.');
+        return;
+      }
+
+      const settings = {
+        name,
+        region: fields.region.value.trim(),
+        lat: _signedFromMagnitude(latMagnitude, fields.latHemi.value, 'S'),
+        lon: _signedFromMagnitude(lonMagnitude, fields.lonHemi.value, 'W'),
+        apiKey,
+      };
+
+      if (!UserSettings.save(settings)) {
+        _showError('Could not save your settings on this device. If you are in Private Browsing, switch to a normal Safari tab and try again - Private Browsing does not allow saving settings on iPhone. Otherwise, check Settings > Safari has not blocked all website data for this site.');
+        return;
+      }
+
+      // First-ever save: boot straight from these in-memory settings
+      // rather than reloading and trusting the write to read back
+      // correctly across the navigation - see the note atop app.js for
+      // why. Editing existing settings still reloads, since that's the
+      // safe way to restart modules that are already running.
+      if (isFirstRun && onFirstBoot) {
+        onFirstBoot(settings);
+        return;
+      }
+
+      location.reload();
+    } catch (err) {
+      _showError(`Something went wrong and your settings were not saved (${err && err.message ? err.message : err}). Please try again - if it keeps happening, reload the page first and then try once more.`);
     }
-
-    const latMagnitude = parseFloat(fields.lat.value);
-    if (Number.isNaN(latMagnitude) || latMagnitude < 0 || latMagnitude > 90) {
-      _showError('No coordinates set yet - tap "Find Location" above, or expand "Set coordinates manually" below.');
-      if (advancedEl) advancedEl.open = true;
-      return;
-    }
-
-    const lonMagnitude = parseFloat(fields.lon.value);
-    if (Number.isNaN(lonMagnitude) || lonMagnitude < 0 || lonMagnitude > 180) {
-      _showError('Longitude must be a number between 0 and 180 (just the magnitude - use the E/W selector for hemisphere).');
-      if (advancedEl) advancedEl.open = true;
-      return;
-    }
-
-    const apiKey = fields.apiKey.value.trim();
-    if (!apiKey) {
-      _showError('Please enter your WorldTides API key.');
-      return;
-    }
-
-    const settings = {
-      name,
-      region: fields.region.value.trim(),
-      lat: _signedFromMagnitude(latMagnitude, fields.latHemi.value, 'S'),
-      lon: _signedFromMagnitude(lonMagnitude, fields.lonHemi.value, 'W'),
-      apiKey,
-    };
-
-    if (!UserSettings.save(settings)) {
-      _showError('Could not save your settings on this device. If you are in Private Browsing, switch to a normal Safari tab and try again - Private Browsing does not allow saving settings on iPhone. Otherwise, check Settings > Safari has not blocked all website data for this site.');
-      return;
-    }
-
-    // First-ever save: boot straight from these in-memory settings rather
-    // than reloading and trusting the write to read back correctly across
-    // the navigation - see the note atop app.js for why. Editing existing
-    // settings still reloads, since that's the safe way to restart modules
-    // that are already running.
-    if (isFirstRun && onFirstBoot) {
-      onFirstBoot(settings);
-      return;
-    }
-
-    location.reload();
   }
 
   useLocationBtn.addEventListener('click', _useCurrentLocation);
