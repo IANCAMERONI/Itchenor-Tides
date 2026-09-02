@@ -6,7 +6,13 @@
 function initFullscreen({ toggleButton, hintText, appEl }) {
   let wakeLock = null;
   let idleTimer = null;
-  const IDLE_MS = 4000;
+  // Long enough that someone actually using the display - reading it for
+  // the first time, then going looking for the Settings button - has a
+  // comfortable window to find and reach it, especially on a phone where
+  // there's more delay between deciding to tap something and tapping it.
+  // Short enough that the display still settles into its clean, chrome-free
+  // look during genuinely passive viewing.
+  const IDLE_MS = 20000;
 
   async function _requestWakeLock() {
     try {

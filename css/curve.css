@@ -61,6 +61,13 @@
   height: 1.4rem;
   background: transparent;
   cursor: pointer;
+  /* Without this, touch browsers (iOS Safari especially) have to guess
+     whether a drag here means "move the thumb" or "scroll the page" -
+     a single tap is unambiguous so that always worked, but an actual
+     drag gesture could get interpreted as a page scroll instead of a
+     slider move. This tells the browser the element handles its own
+     horizontal drag, so vertical/page gestures are never captured here. */
+  touch-action: none;
 }
 
 .curve-slider:disabled {
