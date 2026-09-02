@@ -291,6 +291,10 @@ body.is-fullscreen .settings-hint {
   margin: 0.5rem 0 var(--space-4);
 }
 
+.setup-hint-tight {
+  margin: -0.6rem 0 var(--space-3);
+}
+
 .setup-hint a {
   color: var(--c-brass-300);
 }

@@ -1,9 +1,10 @@
 /**
  * Wires the first-run / settings overlay: collects a location + API key
- * from the visitor, persists them via UserSettings, and reloads the
- * page so the rest of the app boots cleanly against the new
- * configuration rather than trying to reconfigure already-running
- * modules in place.
+ * from the visitor and persists them via UserSettings. A first-ever save
+ * calls back into onFirstBoot() with the settings directly, so the app
+ * can boot from them in memory without a page reload (see app.js for
+ * why). Editing already-saved settings instead reloads the page, since
+ * that's the safe way to restart modules that are already running.
  *
  * Location search (via Open-Meteo's free, no-key, CORS-enabled
  * geocoding API) is the primary path - most visitors just type a place
@@ -17,9 +18,15 @@
  */
 function createSetupUI({
   overlayEl, formEl, fields, useLocationBtn, findLocationBtn, geocodeResultsEl,
-  advancedEl, openBtn, cancelBtn, errorEl,
+  advancedEl, openBtn, cancelBtn, errorEl, onFirstBoot,
 }) {
   const GEOCODE_ENDPOINT = 'https://geocoding-api.open-meteo.com/v1/search';
+
+  // Set by open() each time the overlay is shown, so _onSubmit knows
+  // whether this save is the very first one (no reload needed - see
+  // onFirstBoot below) or an edit of already-running settings (where a
+  // full reload is the safe way to restart already-running modules).
+  let isFirstRun = true;
 
   function _magnitudeAndHemi(signedValue, positiveLabel, negativeLabel) {
     return {
@@ -107,7 +114,7 @@ function createSetupUI({
       const results = (body && body.results) || [];
 
       if (!results.length) {
-        _showError(`No location found for "${query}" - try a simpler name (just the place, not the country), or set coordinates manually below.`);
+        _showError(`No location found for "${query}" - try just the place name on its own (no county, region, or country - e.g. "Itchenor" rather than "Itchenor, West Sussex"), or set coordinates manually below.`);
         if (advancedEl) advancedEl.open = true;
       } else if (results.length === 1) {
         _applyGeocodeResult(results[0]);
@@ -125,6 +132,7 @@ function createSetupUI({
 
   function open(prefill) {
     const hasExisting = Boolean(prefill && prefill.apiKey);
+    isFirstRun = !hasExisting;
     fields.name.value = (prefill && prefill.name) || '';
     fields.region.value = (prefill && prefill.region) || '';
 
@@ -211,6 +219,16 @@ function createSetupUI({
 
     if (!UserSettings.save(settings)) {
       _showError('Could not save your settings on this device. If you are in Private Browsing, switch to a normal Safari tab and try again - Private Browsing does not allow saving settings on iPhone. Otherwise, check Settings > Safari has not blocked all website data for this site.');
+      return;
+    }
+
+    // First-ever save: boot straight from these in-memory settings rather
+    // than reloading and trusting the write to read back correctly across
+    // the navigation - see the note atop app.js for why. Editing existing
+    // settings still reloads, since that's the safe way to restart modules
+    // that are already running.
+    if (isFirstRun && onFirstBoot) {
+      onFirstBoot(settings);
       return;
     }
 
