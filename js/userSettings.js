@@ -25,13 +25,27 @@ const UserSettings = (() => {
     }
   }
 
+  /**
+   * Returns true on success. Can fail for real reasons worth surfacing
+   * to the visitor rather than swallowing - notably, Safari's Private
+   * Browsing mode sets localStorage's write quota to zero on iOS, so
+   * setItem() throws immediately there.
+   */
   function save(settings) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
-    // A saved location's cached tide data belongs to the *previous*
-    // place - drop it so a location change never briefly shows the
-    // wrong harbour's numbers while the fresh fetch is in flight.
-    localStorage.removeItem(CONFIG.storage.cacheKey);
-    localStorage.removeItem(CONFIG.storage.extendedCacheKey);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+      // A saved location's cached tide data belongs to the *previous*
+      // place - drop it so a location change never briefly shows the
+      // wrong harbour's numbers while the fresh fetch is in flight.
+      localStorage.removeItem(CONFIG.storage.cacheKey);
+      localStorage.removeItem(CONFIG.storage.extendedCacheKey);
+    } catch (err) {
+      return false;
+    }
+    // Read back what was actually written rather than trusting the
+    // write call didn't silently no-op - belt and suspenders.
+    const verify = load();
+    return Boolean(verify && verify.apiKey === settings.apiKey && verify.lat === settings.lat && verify.lon === settings.lon);
   }
 
   function clear() {

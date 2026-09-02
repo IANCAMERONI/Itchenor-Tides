@@ -209,7 +209,11 @@ function createSetupUI({
       apiKey,
     };
 
-    UserSettings.save(settings);
+    if (!UserSettings.save(settings)) {
+      _showError('Could not save your settings on this device. If you are in Private Browsing, switch to a normal Safari tab and try again - Private Browsing does not allow saving settings on iPhone. Otherwise, check Settings > Safari has not blocked all website data for this site.');
+      return;
+    }
+
     location.reload();
   }
 

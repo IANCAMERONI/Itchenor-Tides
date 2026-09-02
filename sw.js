@@ -5,7 +5,7 @@
  * already has its own freshness/fallback logic in tideService.js, and
  * a service-worker cache would only get in the way of that.
  */
-const CACHE_NAME = 'itchenor-tide-v5';
+const CACHE_NAME = 'itchenor-tide-v6';
 
 const APP_SHELL = [
   './',
