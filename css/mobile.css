@@ -66,6 +66,19 @@
     align-items: center;
   }
 
+  /* .fullscreen-hint below assumes its own parent wraps (it asks for a
+     full-width row of its own via flex-basis: 100%), but .footer-actions
+     never had flex-wrap set - it's nowrap by default, so that request
+     couldn't be honoured: the button just got forced to its full natural
+     width in a row with no room for it, pushing it (and sometimes the
+     Settings button next to it) off the right edge of the screen
+     entirely, with no way to scroll to it on a fixed fullscreen layout. */
+  .footer-actions {
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-left: 0;
+  }
+
   .fullscreen-hint {
     margin-left: 0;
     flex: 1 0 100%;
