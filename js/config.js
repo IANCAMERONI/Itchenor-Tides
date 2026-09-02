@@ -1,9 +1,15 @@
 /**
- * Central configuration for the Itchenor Tide Bridge Display.
- * Edit the values below — nothing else in the app needs to change.
+ * Central configuration for the Tide Bridge Display.
+ *
+ * Location and the WorldTides API key are no longer set here - a fresh
+ * visitor is asked for both in an in-app setup screen (see
+ * userSettings.js / setupUI.js) and they are saved in that browser's
+ * localStorage, so anyone can fork or deploy this project for their
+ * own harbour without editing any code. The values below are only the
+ * fallback used before that first save completes.
  */
 const CONFIG = {
-  // ---- Location -----------------------------------------------------
+  // ---- Location (overridden by the visitor's saved setup) -------------
   location: {
     name: 'Itchenor',
     region: 'Chichester Harbour, West Sussex, UK',
@@ -14,12 +20,14 @@ const CONFIG = {
   },
 
   // ---- Tide data source (WorldTides API) -----------------------------
-  // Sign up for a free account at https://www.worldtides.info/register
-  // and paste your key below. New accounts receive free trial credits;
-  // this app is deliberately frugal with requests (see refreshIntervalMs)
-  // so ongoing cost is a handful of credits per day.
+  // The API key itself comes from the visitor's own setup, not here -
+  // this placeholder is only used if that step is somehow bypassed. Get
+  // a free key at https://www.worldtides.info/register - new accounts
+  // include free trial credits, and this app is deliberately frugal
+  // with requests (see refresh.dataIntervalMs) so a small balance goes
+  // a long way.
   worldTides: {
-    apiKey: '28fe2b52-713c-40fd-96f5-2f8b498befb7',
+    apiKey: 'YOUR_WORLDTIDES_API_KEY',
     endpoint: 'https://www.worldtides.info/api/v3',
     // Tide heights relative to Chart Datum, matching Admiralty charts
     // and what a mariner would expect on a bridge display.
@@ -30,18 +38,19 @@ const CONFIG = {
     days: 4,
     // Resolution of the continuous height curve, in seconds.
     stepSeconds: 900,
-    // How many days ahead the "future" slider can reach. Fetched as
-    // extremes only (highs/lows), not dense heights - roughly 1 credit
-    // per week of range, versus ~2 credits per week for dense heights -
-    // so a full month's lookahead stays cheap even refreshed daily.
-    extendedDays: 31,
+    // How many days ahead the "future" slider can reach, plus a day of
+    // buffer. Fetched as extremes only (highs/lows), not dense heights -
+    // roughly 1 credit per week of range, versus ~2 credits per week for
+    // dense heights - so this stays cheap even refreshed daily. Keep in
+    // sync with tideCurve.maxDayOffset below (should be at least one more).
+    extendedDays: 8,
   },
 
   // ---- Refresh behaviour ----------------------------------------------
   refresh: {
     // How often to hit the live API for new (near-term, dense) predictions.
     dataIntervalMs: 3 * 60 * 60 * 1000, // 3 hours
-    // How often to refresh the extended (30-day, extremes-only) range.
+    // How often to refresh the extended (7-day, extremes-only) range.
     // Tide predictions this far out barely change day to day, so this
     // can be far less frequent than the near-term refresh.
     extendedDataIntervalMs: 24 * 60 * 60 * 1000, // 24 hours
@@ -85,8 +94,10 @@ const CONFIG = {
     hoursAfter: 23,
     // How often (seconds) the glow on the "now" marker breathes in and out.
     glowPeriodSeconds: 2.6,
-    // How far ahead the day slider can be dragged.
-    maxDayOffset: 30,
+    // How far ahead the day slider can be dragged. Kept modest (rather
+    // than a full month) partly because a wide 0-30 range is fiddly to
+    // land precisely on a touchscreen.
+    maxDayOffset: 7,
     // Scrubbed away from "today" and then left alone, the slider snaps
     // back to live "today" after this many seconds - keeps the display
     // from getting stuck showing next month's tides indefinitely.

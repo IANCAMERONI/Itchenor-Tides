@@ -2,8 +2,35 @@
  * Boot sequence — wires config, data service, sea window and UI together.
  * Each piece above is independently reusable; this is the only file that
  * needs to know how they fit.
+ *
+ * Boot is gated on having a saved location + API key (see UserSettings):
+ * a fresh visitor sees the setup overlay instead of the live display,
+ * and nothing below runs until they've saved settings and the page has
+ * reloaded against them.
  */
 (function bootstrap() {
+  const setupUI = createSetupUI({
+    overlayEl: document.getElementById('setup-overlay'),
+    formEl: document.getElementById('setup-form'),
+    fields: {
+      name: document.getElementById('setup-name'),
+      region: document.getElementById('setup-region'),
+      lat: document.getElementById('setup-lat'),
+      lon: document.getElementById('setup-lon'),
+      apiKey: document.getElementById('setup-api-key'),
+    },
+    useLocationBtn: document.getElementById('setup-use-location'),
+    openBtn: document.getElementById('settings-toggle'),
+    cancelBtn: document.getElementById('setup-cancel'),
+  });
+
+  const settings = UserSettings.load();
+  if (!settings) {
+    setupUI.open();
+    return;
+  }
+  UserSettings.applyToConfig(settings);
+
   document.querySelector('.location-name').textContent = CONFIG.location.name;
   document.querySelector('.location-sub').textContent = CONFIG.location.region;
 

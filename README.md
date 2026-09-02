@@ -1,38 +1,37 @@
-# Itchenor Tide — Bridge Display
+# Tide Bridge Display
 
-A fullscreen, OLED-friendly tide screensaver for **Itchenor, Chichester
-Harbour, West Sussex**, styled like an instrument on a superyacht bridge.
-Plain HTML/CSS/JavaScript — no build step, no frameworks.
+A fullscreen, OLED-friendly tide display styled like an instrument on a
+superyacht bridge — originally built for Itchenor, Chichester Harbour,
+but works anywhere: **any visitor can point it at their own harbour**,
+entirely from the browser, no code editing required. Plain HTML/CSS/
+JavaScript — no build step, no frameworks, no backend.
 
 The centrepiece is a live, continuously-scrolling water-level curve rather
-than a table of times. Current level, trend, and the next two tides update
+than a table of times. Current level, trend, and the day's tides update
 automatically every minute; the underlying prediction data refreshes from
-a live API every few hours. A slider under the curve scrubs up to 30 days
+a live API every few hours. A slider under the curve scrubs up to 7 days
 into the future.
 
-## 1. Get a free WorldTides API key
+## 1. First launch: set your location and API key
 
-Live predictions come from [WorldTides](https://www.worldtides.info/), a
-tide-prediction API that (unlike the UK Admiralty's own API) allows
-requests directly from a browser, which is what makes a pure static
-HTML/CSS/JS app possible here.
+The first time the page loads with nothing saved yet, it shows a setup
+screen instead of the live display — no `js/config.js` editing needed:
 
-1. Register at <https://www.worldtides.info/register> (free trial credits
-   included — this app is deliberately frugal with requests: one data
-   fetch every 3 hours, ~2 credits each, so a trial balance lasts a long
-   time; top-ups afterwards are a few pence).
-2. Copy your API key.
-3. Open [`js/config.js`](js/config.js) and paste it in:
+1. Enter a location name and its latitude/longitude (or tap **"Use my
+   current location"** to fill those in automatically).
+2. Paste in a WorldTides API key. Don't have one? Register free at
+   <https://www.worldtides.info/register> — new accounts include trial
+   credits, and this app is deliberately frugal with requests (one data
+   fetch every 3 hours, ~2 credits each) so a trial balance lasts a long
+   time; top-ups afterwards are a few pence.
+3. Save & Launch.
 
-   ```js
-   worldTides: {
-     apiKey: 'YOUR_WORLDTIDES_API_KEY',
-     ...
-   }
-   ```
-
-That's the only required setup. Everything else in `config.js` (location,
-refresh cadence, chart window) is optional to tweak.
+Both are saved only in that browser's `localStorage` — never sent
+anywhere except directly to WorldTides — so each visitor/device gets
+their own location and their own key. Change either later via the
+**Settings** button in the footer. `js/config.js` still exists for
+tuning behaviour (refresh cadence, chart window, animation timing) but
+no longer needs a location or key hardcoded into it.
 
 ## 2. Install it on Windows (recommended)
 
@@ -116,20 +115,24 @@ css/
   sea.css               Sea window: floating readout + tide HUD cards
   curve.css              HTML label styling for the 24h curve canvas
   mobile.css              Phone-sized reflow (portrait + landscape)
+  setup.css               First-run / settings overlay
 manifest.json           Web App Manifest (name, icons, standalone display)
 sw.js                    Service worker: caches the app shell for offline/instant loads
 assets/icons/           Home-screen icons (512/192/180px + maskable + favicon)
 js/
-  config.js             All user-editable settings (location, API key, timing)
+  config.js             Tunable behaviour - no location or API key (see below)
+  geo.js                 Decimal degrees -> mariner's DMS notation
+  userSettings.js         Saves/loads the visitor's location + API key (localStorage)
+  setupUI.js               Wires the first-run / settings overlay's form
   tideMath.js            Pure functions: interpolation, trends, countdowns, moon phase
   tideService.js         Fetch + localStorage cache + fallback for WorldTides API
   seaWindow.js            Canvas renderer for the animated water level display
   tideCurve.js             24h curve renderer; also handles the future-day view
-  curveSlider.js            Wires the 30-day slider to the curve, plus idle auto-reset
+  curveSlider.js            Wires the 7-day slider to the curve, plus idle auto-reset
   clock.js                Self-correcting clock / once-a-minute tick
   fullscreen.js            Fullscreen toggle, idle-cursor hiding, wake lock
   ui.js                    Wires data + clock ticks to the DOM
-  app.js                   Boot sequence
+  app.js                   Boot sequence - gated on UserSettings having a saved location
 assets/fonts/           Self-hosted Cinzel & Jost (variable woff2)
 install.bat / install.ps1     Per-user Windows installer (shortcuts + Apps & Features entry)
 uninstall.ps1                 Copied into the installed folder; removes everything cleanly
@@ -152,23 +155,30 @@ repositioned every frame to track the waterline.
 
 ## Notes
 
+- **Multi-location by design, no backend.** Each visitor's location and
+  API key live only in their own browser's `localStorage`
+  (`itchenor-tide-user-settings-v1`); the app never sees or forwards
+  anyone else's key. That also means there's nothing shared to run out
+  of credits on your behalf - fork or deploy this anywhere (GitHub
+  Pages, Netlify, a folder on any web server) and every visitor sets up
+  their own harbour independently the first time they open it.
 - **Today's tide cards** (bottom corners of the sea window) list every
   high and low water for the current day — usually two of each, since
-  Itchenor is semi-diurnal — rather than just the next upcoming one.
+  most coastlines are semi-diurnal — rather than just the next upcoming one.
 - **The 24h curve** shows a light metres scale down the left edge
   (`_drawYAxis` in `tideCurve.js`), with "nice" round-number ticks
   rather than gridlines, so it stays readable without turning into an
   engineering chart.
-- **The 30-day slider** works cheaply by fetching two different things
+- **The 7-day slider** works cheaply by fetching two different things
   from WorldTides: a dense, 15-minute-resolution curve for the near term
   (a few days, refreshed every 3 hours — this drives the live "today"
   curve and the water animation), and a separate, extremes-only (highs/
-  lows) fetch covering the full 30 days ahead, refreshed once a day since
+  lows) fetch covering the full week ahead, refreshed once a day since
   predictions that far out barely change. Dragging the slider to a future
   day draws the curve by cosine-interpolating between that day's real
   high/low values — the same "rule of twelfths"-style approximation
   mariners use by hand — rather than fetching dense data for the whole
-  month, which would cost roughly 4x as many API credits. The high/low
+  week, which would cost roughly 4x as many API credits. The high/low
   times and heights shown are always the real fetched values; only the
   curve's shape between them is approximated for days beyond the
   near-term window. Scrub away from "today" and the slider snaps back on

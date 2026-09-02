@@ -228,8 +228,14 @@ body.idle {
   font-variant-numeric: tabular-nums;
 }
 
-.fullscreen-hint {
+.footer-actions {
   margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.fullscreen-hint {
   background: transparent;
   border: 1px solid rgba(201, 164, 100, 0.3);
   color: var(--c-brass-300);
@@ -240,7 +246,7 @@ body.idle {
   padding: 0.55rem 1.1rem;
   border-radius: 999px;
   cursor: pointer;
-  transition: all var(--dur-fast) var(--ease-bridge);
+  transition: opacity var(--dur-med) var(--ease-bridge), all var(--dur-fast) var(--ease-bridge);
 }
 
 .fullscreen-hint:hover {
@@ -252,8 +258,4 @@ body.idle .fullscreen-hint,
 body.is-fullscreen .fullscreen-hint {
   opacity: 0;
   pointer-events: none;
-}
-
-.fullscreen-hint {
-  transition: opacity var(--dur-med) var(--ease-bridge), all var(--dur-fast) var(--ease-bridge);
 }

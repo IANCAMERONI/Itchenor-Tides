@@ -23,6 +23,7 @@
 <link rel="stylesheet" href="css/sea.css">
 <link rel="stylesheet" href="css/curve.css">
 <link rel="stylesheet" href="css/mobile.css">
+<link rel="stylesheet" href="css/setup.css">
 </head>
 <body>
 
@@ -99,13 +100,13 @@
       </div>
     </section>
 
-    <section class="tide-curve-wrap" aria-label="Tide curve, with a 30-day forecast slider">
+    <section class="tide-curve-wrap" aria-label="Tide curve, with a 7-day forecast slider">
       <div class="curve-controls">
         <div class="curve-date-label" id="curve-date-label">Today</div>
         <input type="range" class="curve-slider" id="curve-day-slider"
-               min="0" max="30" step="1" value="0"
+               min="0" max="7" step="1" value="0"
                aria-label="Days ahead" disabled>
-        <div class="curve-slider-max" id="curve-slider-max">+30d</div>
+        <div class="curve-slider-max" id="curve-slider-max">+7d</div>
       </div>
       <div class="curve-canvas-wrap">
         <canvas id="tide-curve-canvas"></canvas>
@@ -136,14 +137,73 @@
       <span class="footer-label">Data Updated</span>
       <span class="footer-value" id="footer-updated">&mdash;</span>
     </div>
-    <button class="fullscreen-hint" id="fullscreen-toggle" type="button" aria-label="Toggle fullscreen">
-      <span id="fullscreen-hint-text">Enter Fullscreen</span>
-    </button>
+    <div class="footer-actions">
+      <button class="settings-hint" id="settings-toggle" type="button" aria-label="Change location or API key">
+        <span>Settings</span>
+      </button>
+      <button class="fullscreen-hint" id="fullscreen-toggle" type="button" aria-label="Toggle fullscreen">
+        <span id="fullscreen-hint-text">Enter Fullscreen</span>
+      </button>
+    </div>
   </footer>
 
 </div>
 
+<!-- First-run / settings overlay: collects a location + WorldTides API -->
+<!-- key from the visitor. Nothing here is sent anywhere except directly -->
+<!-- to WorldTides, from the visitor's own browser.                      -->
+<div id="setup-overlay" class="setup-overlay" hidden>
+  <div class="setup-card">
+    <div class="setup-brand">
+      <span class="brand-mark" aria-hidden="true">&#x2693;</span>
+      <h2>Tide Bridge Setup</h2>
+    </div>
+    <p class="setup-intro">
+      Enter a location and a free WorldTides API key to get started.
+      Both are stored only in this browser.
+    </p>
+
+    <form id="setup-form">
+      <label class="setup-label">
+        Location name
+        <input type="text" id="setup-name" placeholder="e.g. Itchenor" required>
+      </label>
+      <label class="setup-label">
+        Region <span class="setup-optional">(optional)</span>
+        <input type="text" id="setup-region" placeholder="e.g. Chichester Harbour, West Sussex, UK">
+      </label>
+      <div class="setup-row">
+        <label class="setup-label">
+          Latitude
+          <input type="number" id="setup-lat" step="any" min="-90" max="90" placeholder="50.7986" required>
+        </label>
+        <label class="setup-label">
+          Longitude
+          <input type="number" id="setup-lon" step="any" min="-180" max="180" placeholder="-0.8687" required>
+        </label>
+      </div>
+      <button type="button" id="setup-use-location" class="setup-secondary-btn">Use my current location</button>
+
+      <label class="setup-label">
+        WorldTides API key
+        <input type="text" id="setup-api-key" placeholder="Paste your key here" required>
+      </label>
+      <p class="setup-hint">
+        Don't have one? <a href="https://www.worldtides.info/register" target="_blank" rel="noopener">Get a free key at worldtides.info</a>
+        &mdash; new accounts include free trial credits, and this app checks in sparingly (once every few hours) so a small balance goes a long way.
+      </p>
+
+      <div class="setup-actions">
+        <button type="button" id="setup-cancel" class="setup-secondary-btn" hidden>Cancel</button>
+        <button type="submit" class="setup-submit-btn">Save &amp; Launch</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script src="js/config.js"></script>
+<script src="js/geo.js"></script>
+<script src="js/userSettings.js"></script>
 <script src="js/tideMath.js"></script>
 <script src="js/tideService.js"></script>
 <script src="js/seaWindow.js"></script>
@@ -151,6 +211,7 @@
 <script src="js/curveSlider.js"></script>
 <script src="js/clock.js"></script>
 <script src="js/fullscreen.js"></script>
+<script src="js/setupUI.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/app.js"></script>
 </body>

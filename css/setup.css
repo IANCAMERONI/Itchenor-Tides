@@ -1,0 +1,204 @@
+/* ---------------------------------------------------------------- */
+/* Footer "Settings" button — same treatment as the fullscreen hint.   */
+/* ---------------------------------------------------------------- */
+
+.settings-hint {
+  background: transparent;
+  border: 1px solid rgba(201, 164, 100, 0.3);
+  color: var(--c-brass-300);
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 0.55rem 1.1rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: opacity var(--dur-med) var(--ease-bridge), all var(--dur-fast) var(--ease-bridge);
+}
+
+.settings-hint:hover {
+  background: rgba(201, 164, 100, 0.08);
+  border-color: rgba(201, 164, 100, 0.6);
+}
+
+body.idle .settings-hint,
+body.is-fullscreen .settings-hint {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------------- */
+/* First-run / settings overlay.                                     */
+/* ---------------------------------------------------------------- */
+
+.setup-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  background: rgba(5, 7, 8, 0.82);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.setup-card {
+  width: 100%;
+  max-width: 30rem;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: linear-gradient(180deg, var(--c-hull-800), var(--c-hull-950));
+  border: 1px solid rgba(201, 164, 100, 0.22);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 0 60px rgba(0, 0, 0, 0.6), 0 0 40px var(--c-brass-glow);
+  padding: var(--space-5);
+}
+
+.setup-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.setup-brand .brand-mark {
+  font-size: 1.5rem;
+  color: var(--c-brass-500);
+}
+
+.setup-brand h2 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.3rem;
+  letter-spacing: 0.03em;
+  color: var(--c-brass-100);
+}
+
+.setup-intro {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--c-text-300);
+  margin-bottom: var(--space-4);
+}
+
+.setup-label {
+  display: block;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--c-text-500);
+  margin-bottom: var(--space-3);
+}
+
+.setup-optional {
+  text-transform: none;
+  letter-spacing: 0;
+  opacity: 0.7;
+}
+
+.setup-label input {
+  display: block;
+  width: 100%;
+  margin-top: 0.4rem;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(201, 164, 100, 0.25);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.7rem;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  color: var(--c-text-100);
+}
+
+.setup-label input:focus {
+  outline: none;
+  border-color: rgba(201, 164, 100, 0.7);
+  box-shadow: 0 0 0 3px rgba(201, 164, 100, 0.15);
+}
+
+.setup-row {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.setup-row .setup-label {
+  flex: 1;
+}
+
+.setup-secondary-btn {
+  display: block;
+  width: 100%;
+  background: transparent;
+  border: 1px solid rgba(79, 179, 192, 0.35);
+  color: var(--c-water-300);
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  padding: 0.55rem 1rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  margin-bottom: var(--space-4);
+  transition: all var(--dur-fast) var(--ease-bridge);
+}
+
+/* `display: block` above otherwise outranks the UA stylesheet's
+   `[hidden] { display: none }`, since both are single-selector rules
+   and this one comes later in the cascade - so it has to be restated
+   explicitly here rather than relying on the hidden attribute alone. */
+.setup-secondary-btn[hidden] {
+  display: none;
+}
+
+.setup-secondary-btn:hover {
+  background: rgba(79, 179, 192, 0.08);
+  border-color: rgba(79, 179, 192, 0.6);
+}
+
+.setup-secondary-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.setup-hint {
+  font-size: 0.76rem;
+  line-height: 1.5;
+  color: var(--c-text-500);
+  margin: 0.5rem 0 var(--space-4);
+}
+
+.setup-hint a {
+  color: var(--c-brass-300);
+}
+
+.setup-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.setup-actions .setup-secondary-btn {
+  width: auto;
+  margin-bottom: 0;
+}
+
+.setup-submit-btn {
+  background: var(--c-brass-500);
+  border: 1px solid var(--c-brass-500);
+  color: var(--c-hull-950);
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  padding: 0.65rem 1.4rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease-bridge);
+}
+
+.setup-submit-btn:hover {
+  background: var(--c-brass-300);
+  border-color: var(--c-brass-300);
+}
