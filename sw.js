@@ -1,11 +1,25 @@
 /**
  * App-shell service worker. Caches the static files that make up the
- * page itself, so it launches instantly and works offline once
- * installed. Live tide data is deliberately left alone here - the app
- * already has its own freshness/fallback logic in tideService.js, and
- * a service-worker cache would only get in the way of that.
+ * page itself, so it works offline once installed. Live tide data is
+ * deliberately left alone here - the app already has its own
+ * freshness/fallback logic in tideService.js, and a service-worker
+ * cache would only get in the way of that.
+ *
+ * The app shell itself is network-first: every fetch tries the network
+ * and only falls back to the cache if that fails (offline, or a flaky
+ * connection). It used to be cache-first (serve the cached copy
+ * instantly, refresh the cache quietly in the background for next
+ * time) for a snappier launch, but that meant a fix pushed to the site
+ * could take two full reloads to actually reach a visitor - the first
+ * reload was still served from the old cache while it refreshed in the
+ * background, and the *second* reload was needed to see the update.
+ * Combined with how inconsistently iOS Safari checks for service-worker
+ * updates in standalone/home-screen mode, that could leave a device
+ * stuck on a stale, already-fixed bug indefinitely. Network-first loses
+ * a little bit of launch speed on a slow connection, but guarantees a
+ * connected visitor always gets what's actually deployed.
  */
-const CACHE_NAME = 'itchenor-tide-v8';
+const CACHE_NAME = 'itchenor-tide-v9';
 
 const APP_SHELL = [
   './',
@@ -68,17 +82,14 @@ self.addEventListener('fetch', (event) => {
   }
 
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      const network = fetch(event.request)
-        .then((response) => {
-          if (response && response.ok) {
-            const copy = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
-          }
-          return response;
-        })
-        .catch(() => cached);
-      return cached || network;
-    })
+    fetch(event.request)
+      .then((response) => {
+        if (response && response.ok) {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        }
+        return response;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
