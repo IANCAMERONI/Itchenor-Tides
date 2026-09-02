@@ -21,8 +21,13 @@
   border-color: rgba(201, 164, 100, 0.6);
 }
 
-body.idle .settings-hint,
-body.is-fullscreen .settings-hint {
+/* Fullscreen used to hide this unconditionally, on top of the idle
+   fade below - meaning it vanished the instant fullscreen was entered
+   and stayed gone permanently, with no way on a touchscreen to bring
+   it back (no Escape key to fall back on). It now just follows the
+   same idle-based fade as windowed mode in both cases: gone during
+   genuinely passive viewing, but a tap always brings it right back. */
+body.idle .settings-hint {
   opacity: 0;
   pointer-events: none;
 }
