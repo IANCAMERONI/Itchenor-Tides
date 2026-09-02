@@ -159,30 +159,49 @@
       <h2>Tide Bridge Setup</h2>
     </div>
     <p class="setup-intro">
-      Enter a location and a free WorldTides API key to get started.
+      Type where you are and a free WorldTides API key to get started.
       Both are stored only in this browser.
     </p>
 
     <form id="setup-form">
       <label class="setup-label">
-        Location name
+        Location
         <input type="text" id="setup-name" placeholder="e.g. Itchenor" required>
       </label>
-      <label class="setup-label">
-        Region <span class="setup-optional">(optional)</span>
-        <input type="text" id="setup-region" placeholder="e.g. Chichester Harbour, West Sussex, UK">
-      </label>
-      <div class="setup-row">
+      <button type="button" id="setup-find-location" class="setup-secondary-btn">Find Location</button>
+      <div class="setup-geocode-results" id="setup-geocode-results" hidden></div>
+
+      <details class="setup-advanced" id="setup-advanced">
+        <summary>Set coordinates manually</summary>
+
         <label class="setup-label">
-          Latitude
-          <input type="number" id="setup-lat" step="any" min="-90" max="90" placeholder="50.7986" required>
+          Region <span class="setup-optional">(optional)</span>
+          <input type="text" id="setup-region" placeholder="e.g. Chichester Harbour, West Sussex, UK">
         </label>
-        <label class="setup-label">
-          Longitude
-          <input type="number" id="setup-lon" step="any" min="-180" max="180" placeholder="-0.8687" required>
-        </label>
-      </div>
-      <button type="button" id="setup-use-location" class="setup-secondary-btn">Use my current location</button>
+        <div class="setup-row">
+          <label class="setup-label">
+            Latitude
+            <div class="setup-coord">
+              <input type="text" inputmode="decimal" id="setup-lat" placeholder="50.7986">
+              <select id="setup-lat-hemi" class="setup-hemi" aria-label="Latitude hemisphere">
+                <option value="N">N</option>
+                <option value="S">S</option>
+              </select>
+            </div>
+          </label>
+          <label class="setup-label">
+            Longitude
+            <div class="setup-coord">
+              <input type="text" inputmode="decimal" id="setup-lon" placeholder="0.8687">
+              <select id="setup-lon-hemi" class="setup-hemi" aria-label="Longitude hemisphere">
+                <option value="E">E</option>
+                <option value="W" selected>W</option>
+              </select>
+            </div>
+          </label>
+        </div>
+        <button type="button" id="setup-use-location" class="setup-secondary-btn">Use my current location</button>
+      </details>
 
       <label class="setup-label">
         WorldTides API key
@@ -192,6 +211,8 @@
         Don't have one? <a href="https://www.worldtides.info/register" target="_blank" rel="noopener">Get a free key at worldtides.info</a>
         &mdash; new accounts include free trial credits, and this app checks in sparingly (once every few hours) so a small balance goes a long way.
       </p>
+
+      <p class="setup-error" id="setup-error" hidden></p>
 
       <div class="setup-actions">
         <button type="button" id="setup-cancel" class="setup-secondary-btn" hidden>Cancel</button>

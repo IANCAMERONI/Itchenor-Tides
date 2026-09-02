@@ -16,12 +16,18 @@
       name: document.getElementById('setup-name'),
       region: document.getElementById('setup-region'),
       lat: document.getElementById('setup-lat'),
+      latHemi: document.getElementById('setup-lat-hemi'),
       lon: document.getElementById('setup-lon'),
+      lonHemi: document.getElementById('setup-lon-hemi'),
       apiKey: document.getElementById('setup-api-key'),
     },
     useLocationBtn: document.getElementById('setup-use-location'),
+    findLocationBtn: document.getElementById('setup-find-location'),
+    geocodeResultsEl: document.getElementById('setup-geocode-results'),
+    advancedEl: document.getElementById('setup-advanced'),
     openBtn: document.getElementById('settings-toggle'),
     cancelBtn: document.getElementById('setup-cancel'),
+    errorEl: document.getElementById('setup-error'),
   });
 
   const settings = UserSettings.load();

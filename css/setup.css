@@ -127,6 +127,42 @@ body.is-fullscreen .settings-hint {
   flex: 1;
 }
 
+.setup-coord {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.4rem;
+}
+
+.setup-coord input {
+  margin-top: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+.setup-hemi {
+  flex: 0 0 auto;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(201, 164, 100, 0.25);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.5rem;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--c-text-100);
+}
+
+.setup-hemi:focus {
+  outline: none;
+  border-color: rgba(201, 164, 100, 0.7);
+  box-shadow: 0 0 0 3px rgba(201, 164, 100, 0.15);
+}
+
+.setup-error {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--c-bad);
+  margin: 0.5rem 0 0;
+}
+
 .setup-secondary-btn {
   display: block;
   width: 100%;
@@ -159,6 +195,93 @@ body.is-fullscreen .settings-hint {
 .setup-secondary-btn:disabled {
   opacity: 0.5;
   cursor: default;
+}
+
+.setup-geocode-results {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: -0.2rem 0 var(--space-4);
+}
+
+.setup-geocode-results[hidden] {
+  display: none;
+}
+
+.setup-geocode-result {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1rem;
+  width: 100%;
+  text-align: left;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(201, 164, 100, 0.2);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.7rem;
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease-bridge);
+}
+
+.setup-geocode-result:hover {
+  background: rgba(201, 164, 100, 0.08);
+  border-color: rgba(201, 164, 100, 0.5);
+}
+
+.setup-geocode-result strong {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: var(--c-text-100);
+}
+
+.setup-geocode-result span {
+  font-size: 0.72rem;
+  color: var(--c-text-500);
+}
+
+.setup-advanced {
+  margin-bottom: var(--space-4);
+  border: 1px solid rgba(201, 164, 100, 0.16);
+  border-radius: var(--radius-sm);
+  padding: 0 0.8rem;
+}
+
+.setup-advanced[open] {
+  padding-bottom: 0.6rem;
+}
+
+.setup-advanced summary {
+  padding: 0.6rem 0;
+  font-size: 0.76rem;
+  letter-spacing: 0.06em;
+  color: var(--c-text-500);
+  cursor: pointer;
+  list-style: none;
+}
+
+.setup-advanced summary::-webkit-details-marker {
+  display: none;
+}
+
+.setup-advanced summary::before {
+  content: '▸';
+  display: inline-block;
+  margin-right: 0.5rem;
+  color: var(--c-brass-500);
+  transition: transform var(--dur-fast) var(--ease-bridge);
+}
+
+.setup-advanced[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.setup-advanced .setup-label:first-of-type {
+  margin-top: 0.2rem;
+}
+
+.setup-advanced .setup-secondary-btn {
+  margin-bottom: 0.2rem;
 }
 
 .setup-hint {
