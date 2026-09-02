@@ -44,6 +44,20 @@ body.is-fullscreen .settings-hint {
   -webkit-backdrop-filter: blur(8px);
 }
 
+/* `display: flex` above otherwise outranks the UA stylesheet's
+   `[hidden] { display: none }` - both are single-selector rules of
+   equal specificity, so whichever comes later in the cascade wins, and
+   this one does. Without this, setting the overlay's `hidden` property
+   to true from JS has no visual effect at all: the whole modal card -
+   the entire setup screen - stays fully visible regardless, so a
+   perfectly successful save looks indistinguishable from one that did
+   nothing. See the identical fix on .setup-secondary-btn below, which
+   is what caught this pattern the first time - this rule should have
+   been added right alongside it back then. */
+.setup-overlay[hidden] {
+  display: none;
+}
+
 .setup-card {
   width: 100%;
   max-width: 30rem;
