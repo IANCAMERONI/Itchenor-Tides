@@ -98,7 +98,18 @@
 
   const settings = UserSettings.load();
   if (!settings) {
-    setupUI.open();
+    // Pre-fill the form with CONFIG.location as a visible starting point -
+    // Itchenor's name and coordinates by default, but never the API key
+    // (that stays blank; only a name/lat/lon prefill is safe to ship in
+    // public source - see js/config.js for why the key itself never is).
+    // This is a convenience for a fork too: point CONFIG.location at your
+    // own harbour and that becomes every fresh visitor's default prefill.
+    setupUI.open({
+      name: CONFIG.location.name,
+      region: CONFIG.location.region,
+      lat: CONFIG.location.lat,
+      lon: CONFIG.location.lon,
+    });
     return;
   }
   boot(settings);

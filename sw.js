@@ -19,7 +19,7 @@
  * a little bit of launch speed on a slow connection, but guarantees a
  * connected visitor always gets what's actually deployed.
  */
-const CACHE_NAME = 'itchenor-tide-v15';
+const CACHE_NAME = 'itchenor-tide-v16';
 
 const APP_SHELL = [
   './',
