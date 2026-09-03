@@ -244,6 +244,31 @@ const TideService = (() => {
     }, 60 * 1000);
   }
 
+  /**
+   * Loads a static, locally-generated dataset instead of fetching -
+   * used for the setup screen's "Preview with sample data" option. No
+   * network call, no API key, and nothing scheduled afterwards (there's
+   * nothing to refresh); status is 'preview' throughout so the UI can
+   * show a clearly-labelled preview rather than presenting synthetic
+   * numbers as if they were real live data.
+   */
+  function startPreview(sampleData) {
+    state = {
+      heights: sampleData.near.heights,
+      extremes: sampleData.near.extremes,
+      fetchedAt: sampleData.near.fetchedAt,
+      status: 'preview',
+      errorMessage: null,
+    };
+    extendedState = {
+      extremes: sampleData.extended.extremes,
+      fetchedAt: sampleData.extended.fetchedAt,
+      status: 'preview',
+      errorMessage: null,
+    };
+    _notify();
+  }
+
   function getSnapshot() {
     return {
       ...state,
@@ -253,5 +278,5 @@ const TideService = (() => {
     };
   }
 
-  return { start, refresh, refreshExtended, subscribe, getSnapshot };
+  return { start, startPreview, refresh, refreshExtended, subscribe, getSnapshot };
 })();

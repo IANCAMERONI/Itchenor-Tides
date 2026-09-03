@@ -1,8 +1,10 @@
 # Tide Bridge Display
 
-**[Live Demo](https://tideviewer.com/)** — open it,
-enter any harbour and a free [WorldTides](https://www.worldtides.info/register)
-API key, and it's yours. No install, no account, no App Store.
+**[Live Demo](https://tideviewer.com/)** — open it and click **"Preview
+with sample data"** to see it running instantly, no key needed. Enter
+any harbour and a free [WorldTides](https://www.worldtides.info/register)
+API key when you're ready to make it yours. No install, no account, no
+App Store.
 
 ![Tide Bridge Display, showing the live water level, today's high/low tides, and the 7-day forecast curve](assets/screenshots/bridge-display.png)
 
@@ -21,7 +23,11 @@ into the future.
 ## 1. First launch: set your location and API key
 
 The first time the page loads with nothing saved yet, it shows a setup
-screen instead of the live display — no `js/config.js` editing needed:
+screen instead of the live display — no `js/config.js` editing needed.
+Not ready to get a key yet? **"Preview with sample data"** boots the
+full display with a locally-generated example tide curve instead - no
+key, no network call, clearly labelled as a preview in the status pill.
+Otherwise:
 
 1. Enter a location name and its latitude/longitude (or tap **"Use my
    current location"** to fill those in automatically).
@@ -131,6 +137,7 @@ js/
   userSettings.js         Saves/loads the visitor's location + API key (localStorage)
   setupUI.js               Wires the first-run / settings overlay's form
   tideMath.js            Pure functions: interpolation, trends, countdowns, moon phase
+  sampleData.js           Generates the "Preview with sample data" dataset, no key/network
   tideService.js         Fetch + localStorage cache + fallback for WorldTides API
   seaWindow.js            Canvas renderer for the animated water level display
   tideCurve.js             24h curve renderer; also handles the future-day view

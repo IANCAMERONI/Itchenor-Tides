@@ -33,6 +33,7 @@ function createUI({ sea, curve }) {
     live: 'Live · WorldTides · Chart Datum',
     stale: 'Signal Lost · Showing Last Known Data',
     error: 'No Data Link',
+    preview: 'Preview · Sample Data, Not Live',
   };
 
   el.footerPosition.textContent = CONFIG.location.positionLabel;

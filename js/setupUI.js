@@ -18,7 +18,7 @@
  */
 function createSetupUI({
   overlayEl, formEl, fields, useLocationBtn, findLocationBtn, geocodeResultsEl,
-  advancedEl, openBtn, cancelBtn, errorEl, onFirstBoot,
+  advancedEl, openBtn, cancelBtn, errorEl, previewBtn, onFirstBoot, onPreview,
 }) {
   const GEOCODE_ENDPOINT = 'https://geocoding-api.open-meteo.com/v1/search';
 
@@ -153,6 +153,10 @@ function createSetupUI({
 
     fields.apiKey.value = (prefill && prefill.apiKey) || '';
     if (cancelBtn) cancelBtn.hidden = !hasExisting;
+    // Only offered on a first run - once someone already has a real
+    // location + key saved, "preview with sample data" has nothing left
+    // to offer them.
+    if (previewBtn) previewBtn.hidden = hasExisting;
     if (advancedEl) advancedEl.open = false;
     _clearGeocodeResults();
     _hideError();
@@ -256,8 +260,19 @@ function createSetupUI({
   useLocationBtn.addEventListener('click', _useCurrentLocation);
   if (findLocationBtn) findLocationBtn.addEventListener('click', _findLocation);
   formEl.addEventListener('submit', _onSubmit);
-  if (openBtn) openBtn.addEventListener('click', () => open(UserSettings.load()));
+  // Falls back to CONFIG.location if nothing's saved yet, same as the
+  // very first boot - so reopening Settings before ever completing setup
+  // shows the same helpful prefill rather than a blank form.
+  if (openBtn) {
+    openBtn.addEventListener('click', () => open(UserSettings.load() || {
+      name: CONFIG.location.name,
+      region: CONFIG.location.region,
+      lat: CONFIG.location.lat,
+      lon: CONFIG.location.lon,
+    }));
+  }
   if (cancelBtn) cancelBtn.addEventListener('click', close);
+  if (previewBtn) previewBtn.addEventListener('click', () => { close(); if (onPreview) onPreview(); });
 
   return { open, close };
 }

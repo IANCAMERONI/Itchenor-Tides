@@ -19,7 +19,7 @@
  * a little bit of launch speed on a slow connection, but guarantees a
  * connected visitor always gets what's actually deployed.
  */
-const CACHE_NAME = 'itchenor-tide-v17';
+const CACHE_NAME = 'itchenor-tide-v18';
 
 const APP_SHELL = [
   './',
@@ -36,6 +36,7 @@ const APP_SHELL = [
   './js/geo.js',
   './js/userSettings.js',
   './js/tideMath.js',
+  './js/sampleData.js',
   './js/tideService.js',
   './js/seaWindow.js',
   './js/tideCurve.js',

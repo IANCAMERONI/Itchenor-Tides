@@ -16,8 +16,18 @@
  * teardown is the safe way to restart already-running modules.
  */
 (function bootstrap() {
-  function boot(settings) {
-    UserSettings.applyToConfig(settings);
+  /**
+   * `preview: true` skips applying any settings (CONFIG's own Itchenor
+   * defaults stand as-is) and loads a locally-generated sample dataset
+   * instead of subscribing to and starting the real TideService fetch
+   * cycle - see js/sampleData.js and TideService.startPreview. Used by
+   * the setup screen's "Preview with sample data" option, so a visitor
+   * can see the display actually working with no API key at all.
+   */
+  function boot(settings, { preview = false } = {}) {
+    if (!preview) {
+      UserSettings.applyToConfig(settings);
+    }
 
     document.querySelector('.location-name').textContent = CONFIG.location.name;
     document.querySelector('.location-sub').textContent = CONFIG.location.region;
@@ -57,7 +67,11 @@
         curveSlider.enable();
       }
     });
-    TideService.start();
+    if (preview) {
+      TideService.startPreview(SampleTideData.generate());
+    } else {
+      TideService.start();
+    }
     clock.start();
     ui.render(new Date());
 
@@ -90,10 +104,12 @@
     openBtn: document.getElementById('settings-toggle'),
     cancelBtn: document.getElementById('setup-cancel'),
     errorEl: document.getElementById('setup-error'),
+    previewBtn: document.getElementById('setup-preview'),
     onFirstBoot: (settings) => {
       setupUI.close();
       boot(settings);
     },
+    onPreview: () => boot(null, { preview: true }),
   });
 
   const settings = UserSettings.load();

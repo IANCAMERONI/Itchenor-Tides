@@ -143,6 +143,7 @@ body.idle {
 .status-pill[data-state="loading"] .status-dot { background: var(--c-warn); color: var(--c-warn); animation: pulse-dot 1.6s ease-in-out infinite; }
 .status-pill[data-state="error"] .status-dot { background: var(--c-bad); color: var(--c-bad); }
 .status-pill[data-state="stale"] .status-dot { background: var(--c-warn); color: var(--c-warn); }
+.status-pill[data-state="preview"] .status-dot { background: var(--c-brass-500); color: var(--c-brass-500); }
 
 @keyframes pulse-dot {
   0%, 100% { opacity: 1; }

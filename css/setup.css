@@ -102,6 +102,49 @@ body.idle .settings-hint {
   margin-bottom: var(--space-4);
 }
 
+.setup-preview-btn {
+  display: block;
+  width: 100%;
+  background: rgba(201, 164, 100, 0.08);
+  border: 1px solid rgba(201, 164, 100, 0.4);
+  color: var(--c-brass-100);
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.8rem;
+  letter-spacing: 0.03em;
+  padding: 0.65rem 1rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease-bridge);
+}
+
+.setup-preview-btn:hover {
+  background: rgba(201, 164, 100, 0.16);
+  border-color: rgba(201, 164, 100, 0.7);
+}
+
+.setup-preview-btn[hidden] {
+  display: none;
+}
+
+.setup-divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  color: var(--c-text-700);
+  margin: var(--space-3) 0 var(--space-4);
+}
+
+.setup-divider::before,
+.setup-divider::after {
+  content: '';
+  flex: 1 1 auto;
+  height: 1px;
+  background: rgba(201, 164, 100, 0.16);
+}
+
 .setup-label {
   display: block;
   font-size: 0.7rem;
