@@ -18,6 +18,46 @@ function createCurveSlider({ curve, sliderEl, labelEl }) {
     _apply(Number(sliderEl.value));
   });
 
+  // Manual pointer-driven dragging, alongside the native 'input' handling
+  // above rather than replacing it. iOS Safari has a long history of
+  // unreliable touch-drag on a heavily-restyled (-webkit-appearance: none)
+  // range input: a plain tap lands fine since that's an unambiguous native
+  // gesture, but an actual drag can just never fire any native input
+  // events at all, on some iOS versions, even with touch-action set
+  // correctly. Computing the value straight from pointer position and
+  // setting it ourselves sidesteps the platform's own drag handling
+  // entirely, so it can't be broken by whatever that's doing (or not
+  // doing) internally - this is what actually makes the slider draggable
+  // on iOS, not just tappable.
+  function _setFromClientX(clientX) {
+    if (sliderEl.disabled) return;
+    const rect = sliderEl.getBoundingClientRect();
+    if (!rect.width) return;
+    const min = Number(sliderEl.min);
+    const max = Number(sliderEl.max);
+    const fraction = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+    const value = String(Math.round(min + fraction * (max - min)));
+    if (value !== sliderEl.value) {
+      sliderEl.value = value;
+      sliderEl.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+  }
+
+  let dragging = false;
+  sliderEl.addEventListener('pointerdown', (event) => {
+    if (sliderEl.disabled) return;
+    dragging = true;
+    sliderEl.setPointerCapture(event.pointerId);
+    _setFromClientX(event.clientX);
+  });
+  sliderEl.addEventListener('pointermove', (event) => {
+    if (!dragging) return;
+    _setFromClientX(event.clientX);
+  });
+  ['pointerup', 'pointercancel'].forEach(evt =>
+    sliderEl.addEventListener(evt, () => { dragging = false; })
+  );
+
   function enable() {
     sliderEl.disabled = false;
   }
