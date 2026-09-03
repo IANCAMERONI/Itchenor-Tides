@@ -1,5 +1,11 @@
 # Tide Bridge Display
 
+**[Live Demo](https://iancameroni.github.io/Itchenor-Tides/)** — open it,
+enter any harbour and a free [WorldTides](https://www.worldtides.info/register)
+API key, and it's yours. No install, no account, no App Store.
+
+![Tide Bridge Display, showing the live water level, today's high/low tides, and the 7-day forecast curve](assets/screenshots/bridge-display.png)
+
 A fullscreen, OLED-friendly tide display styled like an instrument on a
 superyacht bridge — originally built for Itchenor, Chichester Harbour,
 but works anywhere: **any visitor can point it at their own harbour**,
