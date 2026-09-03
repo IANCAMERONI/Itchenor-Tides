@@ -1,6 +1,6 @@
 # Tide Bridge Display
 
-**[Live Demo](https://iancameroni.github.io/Itchenor-Tides/)** — open it,
+**[Live Demo](https://tideviewer.com/)** — open it,
 enter any harbour and a free [WorldTides](https://www.worldtides.info/register)
 API key, and it's yours. No install, no account, no App Store.
 

@@ -1,7 +1,7 @@
 {
-  "name": "Itchenor Tide",
-  "short_name": "Itchenor Tide",
-  "description": "Live tide bridge display for Itchenor, Chichester Harbour",
+  "name": "Tide Viewer",
+  "short_name": "Tide Viewer",
+  "description": "A luxury yacht bridge-style tide display for any harbour",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
