@@ -240,11 +240,11 @@ function createTideCurve(canvas) {
     ctx.textAlign = 'left';
     ctx.font = `500 ${fontSize * 0.82}px 'Jost', sans-serif`;
     ctx.fillStyle = _hexToRgba(palette.water300, 0.9);
-    ctx.fillText(`NOW · ${h.toFixed(2)}m`, labelX, labelY);
+    ctx.fillText(`NOW · ${TideMath.formatEventTime(new Date(nowMs))}`, labelX, labelY);
 
     ctx.font = `300 ${fontSize * 0.95}px 'Jost', sans-serif`;
     ctx.fillStyle = _hexToRgba(palette.text500, 0.75);
-    ctx.fillText(TideMath.formatEventTime(new Date(nowMs)), labelX, labelY + lineGap);
+    ctx.fillText(`${h.toFixed(2)}m`, labelX, labelY + lineGap);
   }
 
   function _drawTimeAxis(startMs, endMs) {
