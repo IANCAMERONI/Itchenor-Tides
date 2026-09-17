@@ -59,10 +59,10 @@
     });
 
     const clock = createClock({
-      onTick: (now) => {
-        document.getElementById('clock-time').textContent = TideMath.formatClockTime(now);
-        curveSlider.tick();
-      },
+      // No live clock face any more (see ui.js's renderClock) - onTick's
+      // only remaining job is running the slider's idle auto-reset check
+      // often enough to feel responsive.
+      onTick: () => curveSlider.tick(),
       onMinute: (now) => ui.render(now),
     });
 

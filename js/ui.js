@@ -5,7 +5,6 @@
  */
 function createUI({ sea, curve }) {
   const el = {
-    clockTime: document.getElementById('clock-time'),
     clockDate: document.getElementById('clock-date'),
     statusPill: document.getElementById('status-pill'),
     statusText: document.getElementById('status-text'),
@@ -41,8 +40,15 @@ function createUI({ sea, curve }) {
   el.footerPosition.textContent = CONFIG.location.positionLabel;
 
   function renderClock(now) {
-    el.clockTime.textContent = TideMath.formatClockTime(now);
-    el.clockDate.textContent = now.toLocaleDateString('en-GB', {
+    // Shows whichever day the curve slider is currently viewing, not
+    // always "now" - a live ticking clock had little point once the rest
+    // of the display (curve, high/low cards) can be showing a future
+    // day; the moon phase/full-moon countdown stay tied to the real date
+    // though, since they're both about the actual sky tonight, not a
+    // hypothetical future one.
+    const offset = curve.getDayOffset();
+    const dateShown = offset === 0 ? now : new Date(TideMath.startOfDayOffset(offset));
+    el.clockDate.textContent = dateShown.toLocaleDateString('en-GB', {
       weekday: 'long', day: 'numeric', month: 'long',
     });
     el.footerMoon.textContent = TideMath.moonPhase(now);
