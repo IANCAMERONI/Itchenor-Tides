@@ -192,7 +192,7 @@ function createTideCurve(canvas) {
         ctx.fillStyle = _hexToRgba(palette.text300, 0.85);
         ctx.fillText(time, x, labelY);
 
-        ctx.font = `300 ${fontSize * 0.86}px 'Jost', sans-serif`;
+        ctx.font = `300 ${fontSize * 0.95}px 'Jost', sans-serif`;
         ctx.fillStyle = _hexToRgba(palette.text500, 0.75);
         ctx.fillText(heightLabel, x, labelY + lineGap);
       });

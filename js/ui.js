@@ -84,11 +84,11 @@ function createUI({ sea, curve }) {
     if (trend.direction === 'rising') {
       el.trendArrow.textContent = '↗';
       el.trendText.textContent = 'Rising';
-      el.trendRate.textContent = `${Math.abs(trend.ratePerHour).toFixed(2)} m/h`;
+      el.trendRate.textContent = `${Math.abs(trend.ratePerHour).toFixed(2)} m per hour`;
     } else if (trend.direction === 'falling') {
       el.trendArrow.textContent = '↘';
       el.trendText.textContent = 'Falling';
-      el.trendRate.textContent = `${Math.abs(trend.ratePerHour).toFixed(2)} m/h`;
+      el.trendRate.textContent = `${Math.abs(trend.ratePerHour).toFixed(2)} m per hour`;
     } else {
       el.trendArrow.textContent = '→';
       el.trendText.textContent = 'Slack water';
