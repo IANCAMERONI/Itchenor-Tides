@@ -27,7 +27,6 @@ function createTideCurve(canvas) {
       water500: get('--c-water-500'),
       text300: get('--c-text-300'),
       text500: get('--c-text-500'),
-      text700: get('--c-text-700'),
     };
   }
 
@@ -126,9 +125,9 @@ function createTideCurve(canvas) {
   }
 
   function _drawYAxis(scale, band) {
-    const fontSize = Math.max(9, cssHeight * 0.032);
+    const fontSize = Math.max(10, cssHeight * 0.038);
     ctx.font = `300 ${fontSize}px 'Jost', sans-serif`;
-    ctx.fillStyle = _hexToRgba(palette.text700, 0.85);
+    ctx.fillStyle = _hexToRgba(palette.text300, 0.85);
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
     _yAxisTicks(scale).forEach(v => {
@@ -249,13 +248,13 @@ function createTideCurve(canvas) {
   }
 
   function _drawTimeAxis(startMs, endMs) {
-    const fontSize = Math.max(10, cssHeight * 0.038);
+    const fontSize = Math.max(11, cssHeight * 0.042);
     const y = cssHeight * 0.92;
     const stepHours = 6;
     const first = Math.ceil(startMs / (stepHours * 3600000)) * (stepHours * 3600000);
 
     ctx.font = `300 ${fontSize}px 'Jost', sans-serif`;
-    ctx.fillStyle = _hexToRgba(palette.text700, 0.9);
+    ctx.fillStyle = _hexToRgba(palette.text300, 0.9);
     ctx.textAlign = 'center';
     for (let t = first; t <= endMs; t += stepHours * 3600000) {
       const x = _xForTime(t, startMs, endMs);
