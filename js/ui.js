@@ -22,6 +22,8 @@ function createUI({ sea, curve }) {
       { time: document.getElementById('event-2a-time'), height: document.getElementById('event-2a-height') },
       { time: document.getElementById('event-2b-time'), height: document.getElementById('event-2b-height') },
     ],
+    event1Day: document.getElementById('event-1-day'),
+    event2Day: document.getElementById('event-2-day'),
     footerMoon: document.getElementById('footer-moon'),
     footerFullMoon: document.getElementById('footer-full-moon'),
     footerUpdated: document.getElementById('footer-updated'),
@@ -101,13 +103,26 @@ function createUI({ sea, curve }) {
     });
   }
 
-  function renderEvents(snapshot, now) {
-    const todayStart = TideMath.startOfDayOffset(0);
-    const highs = TideMath.eventsForDay(snapshot.extremes, todayStart, 'High');
-    const lows = TideMath.eventsForDay(snapshot.extremes, todayStart, 'Low');
+  function renderEvents(snapshot) {
+    // Follows the curve's day slider rather than always showing today -
+    // otherwise these cards silently kept showing today's real highs/lows
+    // (mislabelled "Today") no matter which future day the curve below
+    // had scrubbed to. Day 0 still reads from the dense near-term
+    // extremes; any day the slider can reach beyond that only exists in
+    // the extended (extremes-only) dataset, same source the curve itself
+    // already draws its on-curve markers from for that day.
+    const offset = curve.getDayOffset();
+    const dayStart = TideMath.startOfDayOffset(offset);
+    const source = offset === 0 ? snapshot.extremes : snapshot.extendedExtremes;
+    const highs = TideMath.eventsForDay(source, dayStart, 'High');
+    const lows = TideMath.eventsForDay(source, dayStart, 'Low');
 
     _fillSlots(el.highTideSlots, highs);
     _fillSlots(el.lowTideSlots, lows);
+
+    const dayLabel = TideMath.formatDayOffsetShort(offset);
+    el.event1Day.textContent = dayLabel;
+    el.event2Day.textContent = dayLabel;
   }
 
   function render(now) {
@@ -115,7 +130,7 @@ function createUI({ sea, curve }) {
     renderClock(now);
     renderStatus(snapshot);
     renderLevel(snapshot, now);
-    renderEvents(snapshot, now);
+    renderEvents(snapshot);
     sea.update(snapshot);
     curve.update(snapshot);
   }

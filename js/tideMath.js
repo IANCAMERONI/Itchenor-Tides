@@ -115,6 +115,16 @@ const TideMath = (() => {
     return `${dateStr} · in ${offsetDays} days`;
   }
 
+  /** Compact "Today" / "Tomorrow" / "Tue 8 Sep" - for the high/low tide cards. */
+  function formatDayOffsetShort(offsetDays) {
+    if (offsetDays === 0) return 'Today';
+    if (offsetDays === 1) return 'Tomorrow';
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() + offsetDays);
+    return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+  }
+
   /** Start of the local day `offsetDays` from now, as a timestamp (ms). */
   function startOfDayOffset(offsetDays) {
     const d = new Date();
@@ -179,6 +189,7 @@ const TideMath = (() => {
     formatClockTime,
     formatEventTime,
     formatDayOffsetLabel,
+    formatDayOffsetShort,
     startOfDayOffset,
     moonPhase,
     daysUntilFullMoon,

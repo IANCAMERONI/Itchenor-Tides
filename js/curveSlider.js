@@ -3,7 +3,7 @@
  * ui.js since it owns its own small piece of state (last interaction
  * time, for the idle auto-reset) rather than just reflecting data.
  */
-function createCurveSlider({ curve, sliderEl, labelEl }) {
+function createCurveSlider({ curve, sliderEl, labelEl, onChange }) {
   let lastInteractionAt = Date.now();
 
   function _apply(days) {
@@ -11,6 +11,12 @@ function createCurveSlider({ curve, sliderEl, labelEl }) {
     labelEl.textContent = TideMath.formatDayOffsetLabel(days);
     const pct = (days / Number(sliderEl.max)) * 100;
     sliderEl.style.setProperty('--curve-slider-fill', `${pct}%`);
+    // Lets the high/low tide cards (and anything else day-dependent)
+    // refresh immediately rather than waiting for the next once-a-minute
+    // clock tick - without this, dragging the slider changed the curve
+    // instantly but left the "High/Low Tides Today" cards showing stale,
+    // mislabelled data for up to a minute.
+    if (onChange) onChange(days);
   }
 
   sliderEl.addEventListener('input', () => {

@@ -39,13 +39,18 @@
 
     const curve = createTideCurve(document.getElementById('tide-curve-canvas'));
 
+    // `ui` isn't assigned until just below, but onChange is only ever
+    // invoked later (on a slider interaction), by which point it is - same
+    // deferred-reference pattern used for setupUI's own callbacks above.
+    let ui;
     const curveSlider = createCurveSlider({
       curve,
       sliderEl: document.getElementById('curve-day-slider'),
       labelEl: document.getElementById('curve-date-label'),
+      onChange: () => { if (ui) ui.render(new Date()); },
     });
 
-    const ui = createUI({ sea, curve });
+    ui = createUI({ sea, curve });
 
     initFullscreen({
       toggleButton: document.getElementById('fullscreen-toggle'),
