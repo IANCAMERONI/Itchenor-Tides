@@ -26,7 +26,6 @@ function createTideCurve(canvas) {
       water300: get('--c-water-300'),
       water500: get('--c-water-500'),
       text300: get('--c-text-300'),
-      text500: get('--c-text-500'),
     };
   }
 
@@ -192,7 +191,7 @@ function createTideCurve(canvas) {
         ctx.fillText(time, x, labelY);
 
         ctx.font = `300 ${fontSize * 0.95}px 'Jost', sans-serif`;
-        ctx.fillStyle = _hexToRgba(palette.text500, 0.75);
+        ctx.fillStyle = _hexToRgba(palette.text300, 0.85);
         ctx.fillText(heightLabel, x, labelY + lineGap);
       });
   }
@@ -243,7 +242,7 @@ function createTideCurve(canvas) {
     ctx.fillText(`NOW · ${TideMath.formatEventTime(new Date(nowMs))}`, labelX, labelY);
 
     ctx.font = `300 ${fontSize * 0.95}px 'Jost', sans-serif`;
-    ctx.fillStyle = _hexToRgba(palette.text500, 0.75);
+    ctx.fillStyle = _hexToRgba(palette.text300, 0.85);
     ctx.fillText(`${h.toFixed(2)}m`, labelX, labelY + lineGap);
   }
 
