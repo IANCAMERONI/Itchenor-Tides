@@ -34,7 +34,8 @@
 
     const sea = createSeaWindow(
       document.getElementById('sea-canvas'),
-      document.getElementById('sea-readout')
+      document.getElementById('sea-readout'),
+      [document.getElementById('event-card-1'), document.getElementById('event-card-2')]
     );
 
     const curve = createTideCurve(document.getElementById('tide-curve-canvas'));

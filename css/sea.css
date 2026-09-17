@@ -38,27 +38,6 @@
   z-index: 2;
 }
 
-.sea-readout-value {
-  font-family: var(--font-display);
-  font-weight: 500;
-  font-size: 4.6rem;
-  line-height: 1;
-  color: var(--c-brass-100);
-  text-shadow:
-    0 0 50px var(--c-brass-glow),
-    0 4px 28px rgba(0, 0, 0, 0.65);
-  font-variant-numeric: tabular-nums;
-}
-
-.sea-readout-unit {
-  font-family: var(--font-body);
-  font-weight: 300;
-  font-size: 1.4rem;
-  margin-left: 0.35rem;
-  color: var(--c-text-300);
-  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.65);
-}
-
 .sea-readout-state {
   display: flex;
   align-items: baseline;
@@ -106,13 +85,15 @@
 }
 
 /* ---------------------------------------------------------------- */
-/* Tide HUD cards — small glass plates in the lower corners of the    */
-/* window, over the deeper (darker) water where text stays legible.   */
+/* Tide HUD cards — small glass plates in the upper corners of the    */
+/* window, above the water where they stay clear of it at any tide    */
+/* level (see seaWindow.js's _positionReadout, which keeps the         */
+/* floating trend readout below these regardless of the water level). */
 /* ---------------------------------------------------------------- */
 
 .sea-hud {
   position: absolute;
-  bottom: var(--space-4);
+  top: var(--space-4);
   z-index: 2;
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
@@ -129,12 +110,15 @@
 }
 
 .sea-hud .event-type {
-  font-size: 0.68rem;
-  letter-spacing: 0.15em;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--c-text-500);
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.45rem;
 }
+
+.sea-hud-left .event-type { color: var(--c-brass-300); }
+.sea-hud-right .event-type { color: var(--c-water-300); }
 
 .sea-hud .event-row {
   display: flex;

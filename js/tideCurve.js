@@ -222,11 +222,30 @@ function createTideCurve(canvas) {
     ctx.fill();
     ctx.shadowBlur = 0;
 
+    // Now that the big standalone height number is gone from the page,
+    // this marker is the only place the current reading appears at all -
+    // shown right next to "NOW", with the current time on its own line
+    // below, in the same two-line style already used for the high/low
+    // markers elsewhere on this curve.
+    //
+    // Left-aligned rather than centred like the high/low labels: "now" is
+    // always close to the left edge of today's view (barely
+    // CONFIG.tideCurve.hoursBefore into it), so centred text here would
+    // routinely get clipped by the edge of the canvas - text simply
+    // starts just right of the dot instead, however close to the edge it is.
     const fontSize = Math.max(11, cssHeight * 0.05);
-    ctx.textAlign = 'center';
+    const labelY = y - fontSize * 1.9;
+    const lineGap = fontSize * 1.15;
+    const labelX = x + coreR + cssWidth * 0.008;
+
+    ctx.textAlign = 'left';
     ctx.font = `500 ${fontSize * 0.82}px 'Jost', sans-serif`;
-    ctx.fillStyle = _hexToRgba(palette.water300, 0.85);
-    ctx.fillText('NOW', x, y - coreR - fontSize * 1.3);
+    ctx.fillStyle = _hexToRgba(palette.water300, 0.9);
+    ctx.fillText(`NOW · ${h.toFixed(2)}m`, labelX, labelY);
+
+    ctx.font = `300 ${fontSize * 0.95}px 'Jost', sans-serif`;
+    ctx.fillStyle = _hexToRgba(palette.text500, 0.75);
+    ctx.fillText(TideMath.formatEventTime(new Date(nowMs)), labelX, labelY + lineGap);
   }
 
   function _drawTimeAxis(startMs, endMs) {

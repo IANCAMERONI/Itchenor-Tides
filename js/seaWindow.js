@@ -4,7 +4,7 @@
  * reflections and the floating level readout are all driven from one
  * continuous animation loop so their motion stays smooth and in sync.
  */
-function createSeaWindow(canvas, readoutEl) {
+function createSeaWindow(canvas, readoutEl, clearanceEls = []) {
   const ctx = canvas.getContext('2d');
 
   // Layered sine waves build an organic (non-repeating-looking) surface
@@ -170,14 +170,31 @@ function createSeaWindow(canvas, readoutEl) {
 
   function _positionReadout(baseY) {
     const gap = cssHeight * 0.06;
-    const minTopMargin = cssHeight * 0.03;
     const maxBottomMargin = cssHeight * 0.02;
+    // The high/low tide cards sit in the window's upper corners; measured
+    // live (rather than assumed) so this adapts to whatever they actually
+    // render at, in any language/font-scaling - the floating trend
+    // readout must never ride up underneath them, even at a high tide
+    // that would otherwise float it right up into that same corner.
+    const canvasTop = canvas.getBoundingClientRect().top;
+    const clearance = clearanceEls.reduce((max, el) => {
+      if (!el) return max;
+      const bottom = el.getBoundingClientRect().bottom - canvasTop;
+      return Math.max(max, bottom);
+    }, 0);
+    // Capped well short of the window's own height - a genuinely short/
+    // cramped window (e.g. a modest, non-fullscreen browser window) could
+    // otherwise compute a clearance taller than the window itself, which
+    // would push the readout below the bottom edge and out of view
+    // entirely rather than just sitting a bit closer to the cards than
+    // ideal.
+    const minTopMargin = clearance > 0
+      ? Math.min(clearance + cssHeight * 0.02, cssHeight * 0.55)
+      : cssHeight * 0.03;
     // `top` positions the block's *bottom* edge (see the CSS translate),
     // so clamp against its actual rendered height — measured live rather
     // than assumed, so the readout can never clip against either edge of
-    // the window regardless of how much content it ends up holding. If
-    // the window is too short for both constraints at once, keep the top
-    // (the hero number) uncut in preference to the trend row beneath it.
+    // the window regardless of how much content it ends up holding.
     const blockHeight = readoutEl.offsetHeight;
     let bottomEdge = baseY - gap;
     bottomEdge = Math.min(bottomEdge, cssHeight - maxBottomMargin);

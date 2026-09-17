@@ -8,7 +8,6 @@ function createUI({ sea, curve }) {
     clockDate: document.getElementById('clock-date'),
     statusPill: document.getElementById('status-pill'),
     statusText: document.getElementById('status-text'),
-    currentHeight: document.getElementById('current-height'),
     trendWrap: document.getElementById('current-trend'),
     trendArrow: document.getElementById('trend-arrow'),
     trendText: document.getElementById('trend-text'),
@@ -67,18 +66,14 @@ function createUI({ sea, curve }) {
     }
   }
 
-  function renderLevel(snapshot, now) {
+  function renderTrend(snapshot, now) {
     const nowMs = now.getTime();
     if (!snapshot.heights.length) {
-      el.currentHeight.textContent = '–.–';
       el.trendText.textContent = 'No data';
       el.trendRate.textContent = '';
       return;
     }
-    const height = TideMath.heightAt(snapshot.heights, nowMs);
     const trend = TideMath.trendAt(snapshot.heights, nowMs);
-
-    el.currentHeight.textContent = height != null ? height.toFixed(2) : '–.–';
     el.trendWrap.dataset.dir = trend.direction;
 
     if (trend.direction === 'rising') {
@@ -135,7 +130,7 @@ function createUI({ sea, curve }) {
     const snapshot = TideService.getSnapshot();
     renderClock(now);
     renderStatus(snapshot);
-    renderLevel(snapshot, now);
+    renderTrend(snapshot, now);
     renderEvents(snapshot);
     sea.update(snapshot);
     curve.update(snapshot);

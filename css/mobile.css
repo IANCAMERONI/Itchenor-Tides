@@ -33,10 +33,6 @@
     gap: var(--space-2);
   }
 
-  .sea-readout-value {
-    font-size: 4.4rem;
-  }
-
   .sea-readout-countdowns {
     gap: var(--space-4);
   }
@@ -89,10 +85,6 @@
 
 /* Very narrow phones (portrait, smaller models) - trim further. */
 @media (max-width: 400px) {
-  .sea-readout-value {
-    font-size: 3.6rem;
-  }
-
   .sea-readout-countdowns {
     gap: var(--space-3);
   }
